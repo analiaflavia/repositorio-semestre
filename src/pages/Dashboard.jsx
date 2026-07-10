@@ -7,7 +7,7 @@ import { SEMESTERS } from '../constants/semesters'
 import { getSubjects } from '../services/subjectService'
 import { getSemesterStats } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
-import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X } from 'lucide-react'
+import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { format, parseISO, isFuture, isToday, differenceInDays } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -44,10 +44,10 @@ function Countdown({ dateStr }) {
   const date = parseISO(dateStr)
   const today = isToday(date)
   const days = differenceInDays(date, new Date())
-  if (today) return <span className="text-xs font-bold text-red-600">¡Hoy!</span>
-  if (days === 1) return <span className="text-xs font-semibold text-orange-500">Mañana</span>
-  if (days <= 7) return <span className="text-xs font-semibold text-orange-400">{days} días</span>
-  return <span className="text-xs text-gray-400">{days} días</span>
+  if (today) return <span className="text-[10px] font-bold text-red-600">¡Hoy!</span>
+  if (days === 1) return <span className="text-[10px] font-semibold text-orange-500">Mañana</span>
+  if (days <= 7) return <span className="text-[10px] font-semibold text-orange-400">{days}d</span>
+  return <span className="text-[10px] text-gray-400">{days}d</span>
 }
 
 function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
@@ -63,7 +63,6 @@ function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
   const subjects = semesterSubjects[semester] || []
   const parsedDate = parseISO(ev.date)
   const today = isToday(parsedDate)
-  const days = differenceInDays(parsedDate, new Date())
 
   async function handleSave() {
     if (!title.trim() || !date) { toast.error('Completa título y fecha'); return }
@@ -92,47 +91,53 @@ function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
 
   if (editing) {
     return (
-      <div className="bg-gray-50 rounded-xl p-3 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+        <div className="grid grid-cols-2 gap-2">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título"
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            className="col-span-2 px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
           <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
           <select value={type} onChange={e => setType(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
             {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div className="flex gap-1 border-b border-gray-200">
           {['semestre', 'materia'].map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors capitalize ${tab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
+              className={`px-2.5 py-1 text-[10px] font-medium border-b-2 -mb-px transition-colors ${tab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
               {t === 'semestre' ? 'Semestre' : 'Materia'}
             </button>
           ))}
         </div>
         {tab === 'semestre' ? (
-          <select value={semester} onChange={e => { setSemester(e.target.value); setMateria('') }}
-            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="">Todos los semestres</option>
+          <select value={semester} onChange={e => setSemester(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="">Todos</option>
             {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
         ) : (
-          <select value={materia} onChange={e => { setMateria(e.target.value); setSemester('') }}
-            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-            disabled={!semester}>
-            <option value="">Selecciona primero el semestre arriba</option>
-            {subjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-          </select>
+          <div className="space-y-1.5">
+            <select value={semester} onChange={e => { setSemester(e.target.value); setMateria('') }}
+              className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="">Semestre</option>
+              {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+            <select value={materia} onChange={e => setMateria(e.target.value)} disabled={!semester}
+              className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50">
+              <option value="">{semester ? 'Materia' : 'Elige semestre'}</option>
+              {subjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+            </select>
+          </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
-            <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando...' : 'Guardar'}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-medium rounded-lg">
+            <Check className="w-3 h-3" /> {saving ? 'Guardando...' : 'Guardar'}
           </button>
           <button onClick={handleCancel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg">
-            <X className="w-3.5 h-3.5" /> Cancelar
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-medium rounded-lg">
+            <X className="w-3 h-3" /> Cancelar
           </button>
         </div>
       </div>
@@ -140,29 +145,30 @@ function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
   }
 
   return (
-    <div className={`group flex items-center gap-3 p-3 rounded-xl transition-colors ${today ? 'bg-red-50 border border-red-100' : 'bg-gray-50 hover:bg-gray-100'}`}>
-      <div className={`text-center flex-shrink-0 w-10 ${today ? 'text-red-600' : 'text-gray-600'}`}>
-        <p className="text-[10px] font-medium uppercase">{format(parsedDate, 'MMM', { locale: es })}</p>
-        <p className="text-lg font-bold leading-none">{format(parsedDate, 'd')}</p>
+    <div className={`group flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${today ? 'bg-red-50 border border-red-100' : 'hover:bg-gray-50'}`}>
+      <div className={`text-center flex-shrink-0 w-8 ${today ? 'text-red-600' : 'text-gray-500'}`}>
+        <p className="text-[9px] font-medium uppercase leading-none">{format(parsedDate, 'MMM', { locale: es })}</p>
+        <p className="text-sm font-bold leading-tight">{format(parsedDate, 'd')}</p>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">{ev.title}</p>
-        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold ${TYPE_COLORS[ev.type]}`}>{ev.type}</span>
-          {ev.semester && <span className="text-[10px] text-gray-500">Sem. {ev.semester}</span>}
-          {ev.materia && <span className="text-[10px] text-gray-500">{ev.materia}</span>}
+        <p className="text-xs font-medium text-gray-900 truncate">{ev.title}</p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className={`inline-flex px-1 py-0.5 rounded text-[9px] font-semibold ${TYPE_COLORS[ev.type]}`}>{ev.type}</span>
+          {(ev.materia || ev.semester) && (
+            <span className="text-[9px] text-gray-400 truncate">{ev.materia || `Sem. ${ev.semester}`}</span>
+          )}
           <Countdown dateStr={ev.date} />
         </div>
       </div>
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 flex-shrink-0">
+      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
         <button onClick={() => setEditing(true)}
-          className="p-1.5 rounded-lg bg-blue-50 text-blue-400 hover:bg-blue-100 transition-all">
-          <Pencil className="w-3.5 h-3.5" />
+          className="p-1 rounded bg-blue-50 text-blue-400 hover:bg-blue-100 transition-all">
+          <Pencil className="w-3 h-3" />
         </button>
         {ev.created_by === user?.id && (
           <button onClick={() => onDelete(ev.id)}
-            className="p-1.5 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 transition-all">
-            <Trash2 className="w-3.5 h-3.5" />
+            className="p-1 rounded bg-red-50 text-red-400 hover:bg-red-100 transition-all">
+            <Trash2 className="w-3 h-3" />
           </button>
         )}
       </div>
@@ -172,18 +178,19 @@ function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
 
 export default function Dashboard() {
   const { profile, user } = useAuth()
-  const [semesterData,    setSemesterData]    = useState({})
+  const [semesterData,     setSemesterData]     = useState({})
   const [semesterSubjects, setSemesterSubjects] = useState({})
-  const [loading,         setLoading]         = useState(true)
-  const [events,          setEvents]          = useState([])
-  const [showForm,        setShowForm]        = useState(false)
-  const [newTitle,        setNewTitle]        = useState('')
-  const [newDate,         setNewDate]         = useState('')
-  const [newType,         setNewType]         = useState('Examen')
-  const [newSemester,     setNewSemester]     = useState('')
-  const [newMateria,      setNewMateria]      = useState('')
-  const [newTab,          setNewTab]          = useState('semestre')
-  const [creating,        setCreating]        = useState(false)
+  const [loading,          setLoading]          = useState(true)
+  const [events,           setEvents]           = useState([])
+  const [showForm,         setShowForm]         = useState(false)
+  const [calExpanded,      setCalExpanded]      = useState(false)
+  const [newTitle,         setNewTitle]         = useState('')
+  const [newDate,          setNewDate]          = useState('')
+  const [newType,          setNewType]          = useState('Examen')
+  const [newSemester,      setNewSemester]      = useState('')
+  const [newMateria,       setNewMateria]       = useState('')
+  const [newTab,           setNewTab]           = useState('semestre')
+  const [creating,         setCreating]         = useState(false)
 
   const newSubjects = semesterSubjects[newSemester] || []
 
@@ -195,12 +202,9 @@ export default function Dashboard() {
           return { id: s.id, subjects, subjectCount: subjects.length, stats }
         })
       )
-      const map = {}
-      const subMap = {}
+      const map = {}; const subMap = {}
       results.forEach(r => { map[r.id] = r; subMap[r.id] = r.subjects })
-      setSemesterData(map)
-      setSemesterSubjects(subMap)
-      setLoading(false)
+      setSemesterData(map); setSemesterSubjects(subMap); setLoading(false)
     }
     load()
     getEvents().then(setEvents).catch(() => {})
@@ -241,10 +245,11 @@ export default function Dashboard() {
   }
 
   const upcomingEvents = events.filter(e => isFuture(parseISO(e.date)) || isToday(parseISO(e.date)))
+  const visibleEvents = calExpanded ? upcomingEvents : upcomingEvents.slice(0, 4)
 
   return (
     <Layout>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'} 👋</h1>
           <p className="text-gray-500 text-sm mt-0.5">Repositorio del Semestre — DERECHO MÉDICO</p>
@@ -262,71 +267,70 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Calendario */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-8">
-        <div className="flex items-center justify-between mb-4">
+      {/* Calendario compacto */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-brand-600" />
             <h2 className="text-sm font-semibold text-gray-900">Fechas importantes</h2>
             {upcomingEvents.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-brand-100 text-brand-700 font-semibold">{upcomingEvents.length} próximas</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-brand-100 text-brand-700 font-semibold">{upcomingEvents.length}</span>
             )}
           </div>
           <button onClick={() => setShowForm(p => !p)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
-            <Plus className="w-3.5 h-3.5" /> Agregar fecha
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Agregar
           </button>
         </div>
 
         {showForm && (
-          <form onSubmit={handleCreateEvent} className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form onSubmit={handleCreateEvent} className="bg-gray-50 rounded-xl p-3 mb-3 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
               <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)}
-                placeholder="Título (ej. Parcial 1 Cirugía)" required
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                placeholder="Título" required
+                className="col-span-2 px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
               <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} required
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
               <select value={newType} onChange={e => setNewType(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div className="flex gap-1 border-b border-gray-200">
               {['semestre', 'materia'].map(t => (
                 <button key={t} type="button" onClick={() => setNewTab(t)}
-                  className={`px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors ${newTab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
+                  className={`px-2.5 py-1 text-[10px] font-medium border-b-2 -mb-px transition-colors ${newTab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
                   {t === 'semestre' ? 'Semestre' : 'Materia'}
                 </button>
               ))}
             </div>
             {newTab === 'semestre' ? (
               <select value={newSemester} onChange={e => setNewSemester(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <option value="">Todos los semestres</option>
                 {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
               </select>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <select value={newSemester} onChange={e => { setNewSemester(e.target.value); setNewMateria('') }}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                  <option value="">Selecciona semestre</option>
+                  className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  <option value="">Semestre</option>
                   {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
-                <select value={newMateria} onChange={e => setNewMateria(e.target.value)}
-                  disabled={!newSemester}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50">
-                  <option value="">{newSemester ? 'Selecciona materia' : 'Primero elige semestre'}</option>
+                <select value={newMateria} onChange={e => setNewMateria(e.target.value)} disabled={!newSemester}
+                  className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50">
+                  <option value="">{newSemester ? 'Materia' : 'Elige semestre primero'}</option>
                   {newSubjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
               </div>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <button type="submit" disabled={creating}
-                className="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white text-sm font-medium rounded-lg transition-colors">
+                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white text-xs font-medium rounded-lg transition-colors">
                 {creating ? 'Agregando...' : 'Agregar'}
               </button>
               <button type="button" onClick={() => setShowForm(false)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
                 Cancelar
               </button>
             </div>
@@ -334,16 +338,24 @@ export default function Dashboard() {
         )}
 
         {upcomingEvents.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No hay fechas próximas. ¡Agrega la primera!</p>
+          <p className="text-xs text-gray-400 text-center py-3">No hay fechas próximas.</p>
         ) : (
-          <div className="space-y-2">
-            {upcomingEvents.map(ev => (
-              <EventRow key={ev.id} ev={ev} user={user}
-                semesterSubjects={semesterSubjects}
-                onDelete={handleDeleteEvent}
-                onUpdate={handleUpdateEvent} />
-            ))}
-          </div>
+          <>
+            <div className="divide-y divide-gray-50">
+              {visibleEvents.map(ev => (
+                <EventRow key={ev.id} ev={ev} user={user}
+                  semesterSubjects={semesterSubjects}
+                  onDelete={handleDeleteEvent}
+                  onUpdate={handleUpdateEvent} />
+              ))}
+            </div>
+            {upcomingEvents.length > 4 && (
+              <button onClick={() => setCalExpanded(p => !p)}
+                className="w-full mt-2 flex items-center justify-center gap-1 py-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                {calExpanded ? <><ChevronUp className="w-3.5 h-3.5" /> Ver menos</> : <><ChevronDown className="w-3.5 h-3.5" /> Ver {upcomingEvents.length - 4} más</>}
+              </button>
+            )}
+          </>
         )}
       </div>
 
