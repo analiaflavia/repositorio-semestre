@@ -86,3 +86,14 @@ export async function searchResources(query) {
   if (error) throw error
   return data
 }
+// ── Actualizar recurso
+export async function updateResource(id, payload) {
+  const { data, error } = await supabase
+    .from('resources')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}

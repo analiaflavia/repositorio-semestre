@@ -189,7 +189,7 @@ export default function SubjectPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {displayed.map(r => (
-            <ResourceCard key={r.id} resource={r} onDelete={setDeleteTarget} />
+            <ResourceCard key={r.id} resource={r} onDelete={setDeleteTarget} onUpdate={updated => setResources(prev => prev.map(r => r.id === updated.id ? updated : r))} />
           ))}
         </div>
       )}
