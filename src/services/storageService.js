@@ -47,3 +47,14 @@ export async function deleteFile(path) {
     .remove([path])
   if (error) throw error
 }
+// ── Subir foto de perfil
+export async function uploadAvatar(file, userId) {
+  const ext = file.name.split('.').pop()
+  const path = `avatars/${userId}.${ext}`
+  const { error } = await supabase.storage
+    .from('semester-files')
+    .upload(path, file, { cacheControl: '3600', upsert: true })
+  if (error) throw error
+  const { data } = supabase.storage.from('semester-files').getPublicUrl(path)
+  return data.publicUrl
+}
