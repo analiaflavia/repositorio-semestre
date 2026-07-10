@@ -9,7 +9,7 @@ import { getSemesterStats } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
 import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { format, parseISO, isFuture, isToday } from 'date-fns'
+import { format, parseISO, isFuture, isToday, differenceInDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import toast from 'react-hot-toast'
 
@@ -40,22 +40,40 @@ async function deleteEvent(id) {
   if (error) throw error
 }
 
-function EventRow({ ev, user, onDelete, onUpdate }) {
-  const [editing, setEditing] = useState(false)
-  const [title,   setTitle]   = useState(ev.title)
-  const [date,    setDate]    = useState(ev.date)
-  const [type,    setType]    = useState(ev.type)
-  const [materia, setMateria] = useState(ev.semester || '')
-  const [saving,  setSaving]  = useState(false)
+function Countdown({ dateStr }) {
+  const date = parseISO(dateStr)
+  const today = isToday(date)
+  const days = differenceInDays(date, new Date())
+  if (today) return <span className="text-xs font-bold text-red-600">¡Hoy!</span>
+  if (days === 1) return <span className="text-xs font-semibold text-orange-500">Mañana</span>
+  if (days <= 7) return <span className="text-xs font-semibold text-orange-400">{days} días</span>
+  return <span className="text-xs text-gray-400">{days} días</span>
+}
 
+function EventRow({ ev, user, semesterSubjects, onDelete, onUpdate }) {
+  const [editing,  setEditing]  = useState(false)
+  const [title,    setTitle]    = useState(ev.title)
+  const [date,     setDate]     = useState(ev.date)
+  const [type,     setType]     = useState(ev.type)
+  const [semester, setSemester] = useState(ev.semester || '')
+  const [materia,  setMateria]  = useState(ev.materia || '')
+  const [tab,      setTab]      = useState('semestre')
+  const [saving,   setSaving]   = useState(false)
+
+  const subjects = semesterSubjects[semester] || []
   const parsedDate = parseISO(ev.date)
   const today = isToday(parsedDate)
+  const days = differenceInDays(parsedDate, new Date())
 
   async function handleSave() {
     if (!title.trim() || !date) { toast.error('Completa título y fecha'); return }
     setSaving(true)
     try {
-      const updated = await updateEvent(ev.id, { title: title.trim(), date, type, semester: materia || null })
+      const updated = await updateEvent(ev.id, {
+        title: title.trim(), date, type,
+        semester: tab === 'semestre' ? semester || null : null,
+        materia: tab === 'materia' ? materia || null : null,
+      })
       toast.success('Evento actualizado')
       setEditing(false)
       onUpdate(updated)
@@ -67,13 +85,14 @@ function EventRow({ ev, user, onDelete, onUpdate }) {
   }
 
   function handleCancel() {
-    setTitle(ev.title); setDate(ev.date); setType(ev.type); setMateria(ev.semester || '')
+    setTitle(ev.title); setDate(ev.date); setType(ev.type)
+    setSemester(ev.semester || ''); setMateria(ev.materia || '')
     setEditing(false)
   }
 
   if (editing) {
     return (
-      <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+      <div className="bg-gray-50 rounded-xl p-3 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título"
             className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
@@ -83,16 +102,36 @@ function EventRow({ ev, user, onDelete, onUpdate }) {
             className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
             {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <input value={materia} onChange={e => setMateria(e.target.value)} placeholder="Materia (opcional)"
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
+        <div className="flex gap-1 border-b border-gray-200">
+          {['semestre', 'materia'].map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors capitalize ${tab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
+              {t === 'semestre' ? 'Semestre' : 'Materia'}
+            </button>
+          ))}
+        </div>
+        {tab === 'semestre' ? (
+          <select value={semester} onChange={e => { setSemester(e.target.value); setMateria('') }}
+            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="">Todos los semestres</option>
+            {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        ) : (
+          <select value={materia} onChange={e => { setMateria(e.target.value); setSemester('') }}
+            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            disabled={!semester}>
+            <option value="">Selecciona primero el semestre arriba</option>
+            {subjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+          </select>
+        )}
         <div className="flex gap-2">
           <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
             <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando...' : 'Guardar'}
           </button>
           <button onClick={handleCancel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg">
             <X className="w-3.5 h-3.5" /> Cancelar
           </button>
         </div>
@@ -108,10 +147,11 @@ function EventRow({ ev, user, onDelete, onUpdate }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{ev.title}</p>
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold ${TYPE_COLORS[ev.type]}`}>{ev.type}</span>
-          {ev.semester && <span className="text-[10px] text-gray-500">{ev.semester}</span>}
-          {today && <span className="text-[10px] font-semibold text-red-600">¡Hoy!</span>}
+          {ev.semester && <span className="text-[10px] text-gray-500">Sem. {ev.semester}</span>}
+          {ev.materia && <span className="text-[10px] text-gray-500">{ev.materia}</span>}
+          <Countdown dateStr={ev.date} />
         </div>
       </div>
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 flex-shrink-0">
@@ -132,27 +172,34 @@ function EventRow({ ev, user, onDelete, onUpdate }) {
 
 export default function Dashboard() {
   const { profile, user } = useAuth()
-  const [semesterData, setSemesterData] = useState({})
-  const [loading,    setLoading]    = useState(true)
-  const [events,     setEvents]     = useState([])
-  const [showForm,   setShowForm]   = useState(false)
-  const [newTitle,   setNewTitle]   = useState('')
-  const [newDate,    setNewDate]    = useState('')
-  const [newType,    setNewType]    = useState('Examen')
-  const [newMateria, setNewMateria] = useState('')
-  const [creating,   setCreating]   = useState(false)
+  const [semesterData,    setSemesterData]    = useState({})
+  const [semesterSubjects, setSemesterSubjects] = useState({})
+  const [loading,         setLoading]         = useState(true)
+  const [events,          setEvents]          = useState([])
+  const [showForm,        setShowForm]        = useState(false)
+  const [newTitle,        setNewTitle]        = useState('')
+  const [newDate,         setNewDate]         = useState('')
+  const [newType,         setNewType]         = useState('Examen')
+  const [newSemester,     setNewSemester]     = useState('')
+  const [newMateria,      setNewMateria]      = useState('')
+  const [newTab,          setNewTab]          = useState('semestre')
+  const [creating,        setCreating]        = useState(false)
+
+  const newSubjects = semesterSubjects[newSemester] || []
 
   useEffect(() => {
     async function load() {
       const results = await Promise.all(
         SEMESTERS.map(async s => {
           const [subjects, stats] = await Promise.all([getSubjects(s.id), getSemesterStats(s.id)])
-          return { id: s.id, subjectCount: subjects.length, stats }
+          return { id: s.id, subjects, subjectCount: subjects.length, stats }
         })
       )
       const map = {}
-      results.forEach(r => { map[r.id] = r })
+      const subMap = {}
+      results.forEach(r => { map[r.id] = r; subMap[r.id] = r.subjects })
       setSemesterData(map)
+      setSemesterSubjects(subMap)
       setLoading(false)
     }
     load()
@@ -166,11 +213,12 @@ export default function Dashboard() {
     try {
       const ev = await createEvent({
         title: newTitle.trim(), date: newDate, type: newType,
-        semester: newMateria.trim() || null,
+        semester: newTab === 'semestre' ? newSemester || null : null,
+        materia: newTab === 'materia' ? newMateria || null : null,
         created_by: user.id, created_by_name: profile?.full_name || user.email,
       })
       setEvents(prev => [...prev, ev].sort((a, b) => a.date.localeCompare(b.date)))
-      setNewTitle(''); setNewDate(''); setNewType('Examen'); setNewMateria('')
+      setNewTitle(''); setNewDate(''); setNewType('Examen'); setNewSemester(''); setNewMateria('')
       setShowForm(false)
       toast.success('Fecha agregada')
     } catch (err) {
@@ -242,10 +290,36 @@ export default function Dashboard() {
                 className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-              <input type="text" value={newMateria} onChange={e => setNewMateria(e.target.value)}
-                placeholder="Materia (ej. Cirugía, Anatomía...)"
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
+            <div className="flex gap-1 border-b border-gray-200">
+              {['semestre', 'materia'].map(t => (
+                <button key={t} type="button" onClick={() => setNewTab(t)}
+                  className={`px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors ${newTab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
+                  {t === 'semestre' ? 'Semestre' : 'Materia'}
+                </button>
+              ))}
+            </div>
+            {newTab === 'semestre' ? (
+              <select value={newSemester} onChange={e => setNewSemester(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="">Todos los semestres</option>
+                {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
+            ) : (
+              <div className="space-y-2">
+                <select value={newSemester} onChange={e => { setNewSemester(e.target.value); setNewMateria('') }}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  <option value="">Selecciona semestre</option>
+                  {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+                <select value={newMateria} onChange={e => setNewMateria(e.target.value)}
+                  disabled={!newSemester}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50">
+                  <option value="">{newSemester ? 'Selecciona materia' : 'Primero elige semestre'}</option>
+                  {newSubjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                </select>
+              </div>
+            )}
             <div className="flex gap-2">
               <button type="submit" disabled={creating}
                 className="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white text-sm font-medium rounded-lg transition-colors">
@@ -265,6 +339,7 @@ export default function Dashboard() {
           <div className="space-y-2">
             {upcomingEvents.map(ev => (
               <EventRow key={ev.id} ev={ev} user={user}
+                semesterSubjects={semesterSubjects}
                 onDelete={handleDeleteEvent}
                 onUpdate={handleUpdateEvent} />
             ))}
