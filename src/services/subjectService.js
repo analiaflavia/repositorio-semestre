@@ -51,3 +51,14 @@ export async function getSubjectResourceCount(subjectId) {
   if (error) throw error
   return count || 0
 }
+// ── Actualizar materia
+export async function updateSubject(id, name) {
+  const { data, error } = await supabase
+    .from('subjects')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}

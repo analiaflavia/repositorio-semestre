@@ -164,6 +164,7 @@ export default function SemesterPage() {
               subject={s}
               resourceCount={counts[s.id] || 0}
               onDelete={setDeleteTarget}
+onUpdate={updated => setSubjects(prev => prev.map(s => s.id === updated.id ? updated : s))}
             />
           ))}
         </div>
