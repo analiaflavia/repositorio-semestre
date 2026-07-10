@@ -16,6 +16,8 @@ import { getSemester } from '../constants/semesters'
 import { Upload, Link2, Zap } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+const PARCIALES = ['Todos', 'Primer parcial', 'Segundo parcial', 'Final', 'General']
+
 export default function SubjectPage() {
   const { semester, subjectId } = useParams()
   const semInfo = getSemester(semester)
@@ -24,14 +26,13 @@ export default function SubjectPage() {
   const [resources,    setResources]    = useState([])
   const [loading,      setLoading]      = useState(true)
   const [activeTab,    setActiveTab]    = useState('all')
+  const [activeParcial, setActiveParcial] = useState('Todos')
   const [search,       setSearch]       = useState('')
   const [filters,      setFilters]      = useState({ kind: 'all', type: '', sort: 'newest' })
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting,     setDeleting]     = useState(false)
 
-  useEffect(() => {
-    loadAll()
-  }, [subjectId])
+  useEffect(() => { loadAll() }, [subjectId])
 
   async function loadAll() {
     setLoading(true)
@@ -49,14 +50,10 @@ export default function SubjectPage() {
     }
   }
 
-  // Filtered + sorted resources
   const displayed = useMemo(() => {
     let list = [...resources]
-
-    // Tab filter (by type)
     if (activeTab !== 'all') list = list.filter(r => r.type === activeTab)
-
-    // Search
+    if (activeParcial !== 'Todos') list = list.filter(r => (r.parcial || 'General') === activeParcial)
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(r =>
@@ -65,20 +62,13 @@ export default function SubjectPage() {
         r.uploaded_by_name?.toLowerCase().includes(q)
       )
     }
-
-    // Kind filter
     if (filters.kind !== 'all') list = list.filter(r => r.resource_kind === filters.kind)
-
-    // Type filter (from filter bar, may overlap with tab)
     if (filters.type) list = list.filter(r => r.type === filters.type)
-
-    // Sort
     if (filters.sort === 'oldest') list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     else if (filters.sort === 'az') list.sort((a, b) => a.title.localeCompare(b.title))
     else list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-
     return list
-  }, [resources, activeTab, search, filters])
+  }, [resources, activeTab, activeParcial, search, filters])
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -98,7 +88,6 @@ export default function SubjectPage() {
     }
   }
 
-  // Count per tab
   function tabCount(tabVal) {
     if (tabVal === 'all') return resources.length
     return resources.filter(r => r.type === tabVal).length
@@ -113,7 +102,6 @@ export default function SubjectPage() {
         { label: subject?.name || '...' },
       ]} />
 
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{subject?.name}</h1>
@@ -135,22 +123,17 @@ export default function SubjectPage() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs por tipo */}
       <div className="flex gap-1 overflow-x-auto pb-1 mb-4 scrollbar-hide">
         {SUBJECT_TABS.map(tab => {
           const count = tabCount(tab.value)
           return (
-            <button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
+            <button key={tab.value} onClick={() => setActiveTab(tab.value)}
               className={`flex-shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.value
-                  ? tab.value === 'Joseo'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-brand-50 text-brand-700'
+                  ? tab.value === 'Joseo' ? 'bg-amber-100 text-amber-700' : 'bg-brand-50 text-brand-700'
                   : 'text-gray-500 hover:bg-gray-100'
-              }`}
-            >
+              }`}>
               {tab.label}
               {count > 0 && (
                 <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
@@ -162,20 +145,30 @@ export default function SubjectPage() {
         })}
       </div>
 
-      {/* Joseo banner */}
+      {/* Filtro por parcial */}
+      <div className="flex gap-1 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+        {PARCIALES.map(p => (
+          <button key={p} onClick={() => setActiveParcial(p)}
+            className={`flex-shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              activeParcial === p
+                ? 'bg-indigo-100 text-indigo-700'
+                : 'text-gray-500 hover:bg-gray-100'
+            }`}>
+            {p}
+          </button>
+        ))}
+      </div>
+
       {activeTab === 'Joseo' && (
         <div className="p-4 mb-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-3">
           <Zap className="w-5 h-5 text-amber-500 flex-shrink-0" />
           <div>
             <p className="text-sm font-semibold text-amber-800">Sección de Joseos ⚡</p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              Oportunidades, becas, contactos, pasantías, tutorías y todo lo útil que quieras compartir.
-            </p>
+            <p className="text-xs text-amber-700 mt-0.5">Oportunidades, becas, contactos, pasantías, tutorías y todo lo útil que quieras compartir.</p>
           </div>
         </div>
       )}
 
-      {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="flex-1">
           <SearchBar value={search} onChange={setSearch} placeholder="Buscar en esta materia..." />
@@ -183,7 +176,6 @@ export default function SubjectPage() {
         <FilterBar filters={filters} onChange={setFilters} />
       </div>
 
-      {/* Resources grid */}
       {displayed.length === 0 ? (
         <EmptyState
           variant="resources"

@@ -9,7 +9,9 @@ import { getSubjects } from '../services/subjectService'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
-const MAX_SIZE = 200 * 1024 * 1024 // 200 MB
+const MAX_SIZE = 200 * 1024 * 1024
+
+const PARCIALES = ['Primer parcial', 'Segundo parcial', 'Final', 'General']
 
 export default function FileUploadForm({ defaultSemester, defaultSubjectId, defaultSubjectName }) {
   const { user, profile } = useAuth()
@@ -21,6 +23,7 @@ export default function FileUploadForm({ defaultSemester, defaultSubjectId, defa
   const [title,       setTitle]       = useState('')
   const [description, setDescription] = useState('')
   const [type,        setType]        = useState('Clase')
+  const [parcial,     setParcial]     = useState('General')
   const [file,        setFile]        = useState(null)
   const [loading,     setLoading]     = useState(false)
 
@@ -53,21 +56,21 @@ export default function FileUploadForm({ defaultSemester, defaultSubjectId, defa
     setLoading(true)
     try {
       const path = await uploadFile(file, user.id)
-
       const selectedSubject = subjects.find(s => s.id === subjectId) || { name: defaultSubjectName }
 
       await createResource({
         title,
         description,
         semester,
-        subject_id:        subjectId,
-        subject_name:      selectedSubject?.name || '',
+        subject_id:       subjectId,
+        subject_name:     selectedSubject?.name || '',
         type,
-        file_path:         path,
-        file_url:          path,
-        uploaded_by:       user.id,
-        uploaded_by_name:  profile?.full_name || user.email,
-        resource_kind:     'file',
+        parcial,
+        file_path:        path,
+        file_url:         path,
+        uploaded_by:      user.id,
+        uploaded_by_name: profile?.full_name || user.email,
+        resource_kind:    'file',
       })
 
       toast.success('¡Archivo subido exitosamente!')
@@ -81,7 +84,6 @@ export default function FileUploadForm({ defaultSemester, defaultSubjectId, defa
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
-      {/* Semestre */}
       <Field label="Semestre *">
         <select value={semester} onChange={handleSemesterChange} required className={selectCls}>
           <option value="">Selecciona semestre</option>
@@ -89,7 +91,6 @@ export default function FileUploadForm({ defaultSemester, defaultSubjectId, defa
         </select>
       </Field>
 
-      {/* Materia */}
       <Field label="Materia *">
         <select value={subjectId} onChange={e => setSubjectId(e.target.value)} required disabled={!semester} className={selectCls}>
           <option value="">{semester ? 'Selecciona materia' : 'Primero elige semestre'}</option>
@@ -97,27 +98,29 @@ export default function FileUploadForm({ defaultSemester, defaultSubjectId, defa
         </select>
       </Field>
 
-      {/* Título */}
       <Field label="Título *">
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} required
           placeholder="Ej. Parcial 1 - Anatomía" className={inputCls} />
       </Field>
 
-      {/* Tipo */}
       <Field label="Tipo de material *">
         <select value={type} onChange={e => setType(e.target.value)} className={selectCls}>
           {RESOURCE_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
         </select>
       </Field>
 
-      {/* Descripción */}
+      <Field label="Clasificación *">
+        <select value={parcial} onChange={e => setParcial(e.target.value)} className={selectCls}>
+          {PARCIALES.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </Field>
+
       <Field label="Descripción (opcional)">
         <textarea value={description} onChange={e => setDescription(e.target.value)}
           rows={3} placeholder="Información adicional sobre este recurso..."
           className={inputCls + ' resize-none'} />
       </Field>
 
-      {/* Archivo */}
       <Field label="Archivo *">
         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-brand-400 hover:bg-brand-50/30 transition-colors">
           <input type="file" className="hidden" onChange={handleFileChange}
