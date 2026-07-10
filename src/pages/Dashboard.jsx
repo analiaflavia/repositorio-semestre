@@ -15,9 +15,9 @@ import toast from 'react-hot-toast'
 
 const EVENT_TYPES = ['Examen', 'Entrega', 'Otro']
 const TYPE_COLORS = {
-  'Examen':   'bg-red-100 text-red-700',
-  'Entrega':  'bg-blue-100 text-blue-700',
-  'Otro':     'bg-gray-100 text-gray-600',
+  'Examen':  'bg-red-100 text-red-700',
+  'Entrega': 'bg-blue-100 text-blue-700',
+  'Otro':    'bg-gray-100 text-gray-600',
 }
 
 async function getEvents() {
@@ -47,23 +47,23 @@ async function deleteEvent(id) {
 export default function Dashboard() {
   const { profile, user } = useAuth()
   const [semesterData, setSemesterData] = useState({})
-  const [loading,      setLoading]      = useState(true)
-  const [events,       setEvents]       = useState([])
-  const [showForm,     setShowForm]     = useState(false)
-  const [newTitle,     setNewTitle]     = useState('')
-  const [newDate,      setNewDate]      = useState('')
-  const [newType,      setNewType]      = useState('Examen')
-  const [newSemester,  setNewSemester]  = useState('')
-  const [creating,     setCreating]     = useState(false)
+  const [loading,     setLoading]     = useState(true)
+  const [events,      setEvents]      = useState([])
+  const [showForm,    setShowForm]    = useState(false)
+  const [newTitle,    setNewTitle]    = useState('')
+  const [newDate,     setNewDate]     = useState('')
+  const [newType,     setNewType]     = useState('Examen')
+  const [newMateria,  setNewMateria]  = useState('')
+  const [creating,    setCreating]    = useState(false)
 
   useEffect(() => {
     async function load() {
-      const [results] = await Promise.all([
-        Promise.all(SEMESTERS.map(async s => {
+      const results = await Promise.all(
+        SEMESTERS.map(async s => {
           const [subjects, stats] = await Promise.all([getSubjects(s.id), getSemesterStats(s.id)])
           return { id: s.id, subjectCount: subjects.length, stats }
-        }))
-      ])
+        })
+      )
       const map = {}
       results.forEach(r => { map[r.id] = r })
       setSemesterData(map)
@@ -82,12 +82,12 @@ export default function Dashboard() {
         title: newTitle.trim(),
         date: newDate,
         type: newType,
-        semester: newSemester || null,
+        semester: newMateria.trim() || null,
         created_by: user.id,
         created_by_name: profile?.full_name || user.email,
       })
       setEvents(prev => [...prev, ev].sort((a, b) => a.date.localeCompare(b.date)))
-      setNewTitle(''); setNewDate(''); setNewType('Examen'); setNewSemester('')
+      setNewTitle(''); setNewDate(''); setNewType('Examen'); setNewMateria('')
       setShowForm(false)
       toast.success('Fecha agregada')
     } catch (err) {
@@ -161,11 +161,9 @@ export default function Dashboard() {
                 className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-              <select value={newSemester} onChange={e => setNewSemester(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                <option value="">Todos los semestres</option>
-                {SEMESTERS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-              </select>
+              <input type="text" value={newMateria} onChange={e => setNewMateria(e.target.value)}
+                placeholder="Materia (ej. Cirugía, Anatomía...)"
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
             <div className="flex gap-2">
               <button type="submit" disabled={creating}
@@ -200,7 +198,7 @@ export default function Dashboard() {
                         {ev.type}
                       </span>
                       {ev.semester && (
-                        <span className="text-[10px] text-gray-400">Semestre {ev.semester}</span>
+                        <span className="text-[10px] text-gray-500">{ev.semester}</span>
                       )}
                       {today && <span className="text-[10px] font-semibold text-red-600">¡Hoy!</span>}
                     </div>
