@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import { Trash2, Pencil, Check, X, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Pencil, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { updateAnswerList, deleteAnswerList } from '../services/answerListService'
 import { useAuth } from '../hooks/useAuth'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-
-const OPTIONS = ['A', 'B', 'C', 'D', 'E', 'V', 'F']
 
 export default function AnswerListCard({ list, onDelete, onUpdate }) {
   const { user, profile } = useAuth()
@@ -15,29 +13,19 @@ export default function AnswerListCard({ list, onDelete, onUpdate }) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(list.title)
-  const [answers, setAnswers] = useState(list.answers || [])
+  const [text, setText] = useState(
+    Array.isArray(list.answers)
+      ? list.answers.map(a => a.text || '').join('\n')
+      : ''
+  )
   const [saving, setSaving] = useState(false)
-
-  function handleAnswerChange(index, value) {
-    const updated = [...answers]
-    updated[index] = { ...updated[index], answer: value }
-    setAnswers(updated)
-  }
-
-  function addAnswer() {
-    setAnswers(prev => [...prev, { question: prev.length + 1, answer: 'A' }])
-  }
-
-  function removeAnswer(index) {
-    const updated = answers.filter((_, i) => i !== index)
-      .map((a, i) => ({ ...a, question: i + 1 }))
-    setAnswers(updated)
-  }
 
   async function handleSave() {
     if (!title.trim()) { toast.error('El título no puede estar vacío'); return }
     setSaving(true)
     try {
+      const lines = text.split('\n').filter(l => l.trim())
+      const answers = lines.map(l => ({ text: l }))
       const updated = await updateAnswerList(list.id, {
         title: title.trim(),
         answers,
@@ -55,9 +43,11 @@ export default function AnswerListCard({ list, onDelete, onUpdate }) {
 
   function handleCancel() {
     setTitle(list.title)
-    setAnswers(list.answers || [])
+    setText(Array.isArray(list.answers) ? list.answers.map(a => a.text || '').join('\n') : '')
     setEditing(false)
   }
+
+  const lines = Array.isArray(list.answers) ? list.answers : []
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -66,7 +56,7 @@ export default function AnswerListCard({ list, onDelete, onUpdate }) {
           <div className="flex-1 min-w-0">
             {editing ? (
               <input value={title} onChange={e => setTitle(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-1.5 text-sm font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 mb-1"
                 placeholder="Título de la lista" />
             ) : (
               <h3 className="font-semibold text-gray-900 text-sm">{list.title}</h3>
@@ -75,7 +65,7 @@ export default function AnswerListCard({ list, onDelete, onUpdate }) {
               {list.created_by_name} · {format(new Date(list.created_at), 'd MMM yyyy', { locale: es })}
               {list.updated_by_name && ` · Editado por ${list.updated_by_name}`}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">{list.answers?.length || 0} respuestas</p>
+            <p className="text-xs text-gray-500 mt-0.5">{lines.length} {lines.length === 1 ? 'entrada' : 'entradas'}</p>
           </div>
 
           <div className="flex gap-1 flex-shrink-0">
@@ -102,50 +92,39 @@ export default function AnswerListCard({ list, onDelete, onUpdate }) {
           </div>
         </div>
 
-        {(expanded || editing) && (
-          <div className="mt-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-              {answers.map((a, i) => (
-                <div key={i} className="flex items-center gap-1.5 bg-gray-50 rounded-lg px-2 py-1.5">
-                  <span className="text-xs font-medium text-gray-500 w-5 flex-shrink-0">{i + 1}.</span>
-                  {editing ? (
-                    <>
-                      <select value={a.answer} onChange={e => handleAnswerChange(i, e.target.value)}
-                        className="flex-1 text-xs border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-brand-500">
-                        {OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                      <button onClick={() => removeAnswer(i)}
-                        className="text-red-400 hover:text-red-600 flex-shrink-0">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </>
-                  ) : (
-                    <span className="text-sm font-bold text-brand-700">{a.answer}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {editing && (
-              <button onClick={addAnswer}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors mb-3">
-                <Plus className="w-3.5 h-3.5" /> Agregar pregunta
+        {editing && (
+          <div className="mt-3">
+            <p className="text-xs text-gray-400 mb-1.5">Escribe cada entrada en una línea separada</p>
+            <textarea
+              value={text}
+              onChange={e => setText(e.target.value)}
+              rows={10}
+              placeholder={"1. achondroplasia\n2. molecular mimicry\n3. diabetes insipida"}
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y font-mono"
+            />
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
+                <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando...' : 'Guardar'}
               </button>
-            )}
-
-            {editing && (
-              <div className="flex gap-2">
-                <button onClick={handleSave} disabled={saving}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
-                  <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando...' : 'Guardar'}
-                </button>
-                <button onClick={handleCancel}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
-                  <X className="w-3.5 h-3.5" /> Cancelar
-                </button>
-              </div>
-            )}
+              <button onClick={handleCancel}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
+                <X className="w-3.5 h-3.5" /> Cancelar
+              </button>
+            </div>
           </div>
+        )}
+
+        {expanded && !editing && lines.length > 0 && (
+          <div className="mt-3 space-y-1">
+            {lines.map((a, i) => (
+              <p key={i} className="text-sm text-gray-700 leading-relaxed">{a.text}</p>
+            ))}
+          </div>
+        )}
+
+        {expanded && !editing && lines.length === 0 && (
+          <p className="mt-3 text-xs text-gray-400 italic">Lista vacía — haz clic en editar para agregar entradas.</p>
         )}
       </div>
     </div>
