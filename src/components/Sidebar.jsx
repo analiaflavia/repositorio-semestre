@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Clock, User, ChevronRight, BookOpen, X, Upload } from 'lucide-react'
+import { LayoutDashboard, Clock, User, ChevronRight, X, Upload } from 'lucide-react'
 import { SEMESTERS } from '../constants/semesters'
 import { clsx } from '../utils/clsx'
 
@@ -26,9 +26,7 @@ export default function Sidebar({ open, onClose }) {
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-black text-xs">DM</span>
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
           <div>
             <p className="text-sm font-bold text-white leading-tight">DERECHO MÉDICO</p>
             <p className="text-[10px] text-white/40 leading-tight">Repositorio del Semestre</p>
