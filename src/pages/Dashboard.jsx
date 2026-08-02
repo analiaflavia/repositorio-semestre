@@ -9,15 +9,16 @@ import { getSemesterStats } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
 import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { format, parseISO, isFuture, isToday, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns'
+import { format, parseISO, isFuture, isToday, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
 import toast from 'react-hot-toast'
+import ActivityFeed from '../components/ActivityFeed'
 
 const EVENT_TYPES = ['Examen', 'Entrega', 'Otro']
 const TYPE_COLORS = {
-  'Examen':  { dot: 'bg-red-500',   badge: 'bg-red-100 text-red-700',   label: 'text-red-600' },
-  'Entrega': { dot: 'bg-blue-500',  badge: 'bg-blue-100 text-blue-700',  label: 'text-blue-600' },
-  'Otro':    { dot: 'bg-gray-400',  badge: 'bg-gray-100 text-gray-600',  label: 'text-gray-500' },
+  'Examen':  { dot: 'bg-red-500',  badge: 'bg-red-100 text-red-700',  label: 'text-red-600' },
+  'Entrega': { dot: 'bg-blue-500', badge: 'bg-blue-100 text-blue-700', label: 'text-blue-600' },
+  'Otro':    { dot: 'bg-gray-400', badge: 'bg-gray-100 text-gray-600', label: 'text-gray-500' },
 }
 
 async function getEvents() {
@@ -43,12 +44,11 @@ async function deleteEvent(id) {
 function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAdd }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay,  setSelectedDay]  = useState(null)
-  const [editingId,    setEditingId]    = useState(null)
 
-  const monthStart  = startOfMonth(currentMonth)
-  const monthEnd    = endOfMonth(currentMonth)
-  const days        = eachDayOfInterval({ start: monthStart, end: monthEnd })
-  const startPad    = monthStart.getDay()
+  const monthStart = startOfMonth(currentMonth)
+  const monthEnd   = endOfMonth(currentMonth)
+  const days       = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  const startPad   = monthStart.getDay()
 
   const upcomingEvents = events.filter(e => isFuture(parseISO(e.date)) || isToday(parseISO(e.date)))
 
@@ -57,16 +57,13 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
   }
 
   function getDotsForDay(day) {
-    const dayEvents = eventsForDay(day)
-    const types = [...new Set(dayEvents.map(e => e.type))]
-    return types
+    return [...new Set(eventsForDay(day).map(e => e.type))]
   }
 
   const selectedEvents = selectedDay ? eventsForDay(selectedDay) : []
 
   return (
     <div>
-      {/* Month nav */}
       <div className="flex items-center justify-between mb-3">
         <button onClick={() => setCurrentMonth(m => subMonths(m, 1))}
           className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
@@ -81,21 +78,19 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
         </button>
       </div>
 
-      {/* Day headers */}
       <div className="grid grid-cols-7 mb-1">
         {['D','L','M','M','J','V','S'].map((d, i) => (
           <div key={i} className="text-center text-[10px] font-semibold text-gray-400 py-1">{d}</div>
         ))}
       </div>
 
-      {/* Days grid */}
       <div className="grid grid-cols-7 gap-y-1">
         {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} />)}
         {days.map(day => {
-          const dots = getDotsForDay(day)
+          const dots       = getDotsForDay(day)
           const isSelected = selectedDay && isSameDay(day, selectedDay)
-          const todayDay = isToday(day)
-          const hasEvents = dots.length > 0
+          const todayDay   = isToday(day)
+          const hasEvents  = dots.length > 0
           return (
             <button key={day.toISOString()} onClick={() => setSelectedDay(isSelected ? null : day)}
               className={`relative flex flex-col items-center py-1 rounded-lg transition-colors ${
@@ -116,7 +111,6 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
         })}
       </div>
 
-      {/* Selected day events */}
       {selectedDay && (
         <div className="mt-3 border-t border-gray-100 pt-3">
           <p className="text-xs font-semibold text-gray-600 mb-2 capitalize">
@@ -146,7 +140,6 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
         </div>
       )}
 
-      {/* Leyenda */}
       <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-4 flex-wrap">
         {EVENT_TYPES.map(t => (
           <div key={t} className="flex items-center gap-1.5">
@@ -156,7 +149,6 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
         ))}
       </div>
 
-      {/* Próximos eventos resumen */}
       {upcomingEvents.length > 0 && !selectedDay && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Próximos</p>
@@ -199,7 +191,7 @@ function EventItem({ ev, user, semesterSubjects, onDelete, onUpdate }) {
       const updated = await updateEvent(ev.id, {
         title: title.trim(), date, type,
         semester: tab === 'semestre' ? semester || null : null,
-        materia: tab === 'materia' ? materia || null : null,
+        materia:  tab === 'materia'  ? materia  || null : null,
       })
       toast.success('Actualizado')
       setEditing(false)
@@ -270,7 +262,6 @@ export default function Dashboard() {
   const [loading,          setLoading]          = useState(true)
   const [events,           setEvents]           = useState([])
   const [showForm,         setShowForm]         = useState(false)
-  const [prefillDate,      setPrefillDate]      = useState('')
   const [newTitle,         setNewTitle]         = useState('')
   const [newDate,          setNewDate]          = useState('')
   const [newType,          setNewType]          = useState('Examen')
@@ -310,7 +301,7 @@ export default function Dashboard() {
       const ev = await createEvent({
         title: newTitle.trim(), date: newDate, type: newType,
         semester: newTab === 'semestre' ? newSemester || null : null,
-        materia: newTab === 'materia' ? newMateria || null : null,
+        materia:  newTab === 'materia'  ? newMateria  || null : null,
         created_by: user.id, created_by_name: profile?.full_name || user.email,
       })
       setEvents(prev => [...prev, ev].sort((a, b) => a.date.localeCompare(b.date)))
@@ -333,30 +324,39 @@ export default function Dashboard() {
   }
 
   function handleUpdateEvent(updated) {
-    setEvents(prev => prev.map(e => e.id === updated.id ? updated : e).sort((a, b) => a.date.localeCompare(b.date)))
+    setEvents(prev =>
+      prev.map(e => e.id === updated.id ? updated : e)
+          .sort((a, b) => a.date.localeCompare(b.date))
+    )
   }
 
   return (
     <Layout>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'} 👋</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'} 👋
+          </h1>
           <p className="text-gray-500 text-sm mt-0.5">Repositorio del Semestre — DERECHO MÉDICO</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Link to="/upload" className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-xl transition-colors">
+          <Link to="/upload"
+            className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-xl transition-colors">
             <Upload className="w-3.5 h-3.5" /> Subir archivo
           </Link>
-          <Link to="/add-link" className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl transition-colors">
+          <Link to="/add-link"
+            className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl transition-colors">
             <Link2 className="w-3.5 h-3.5" /> Agregar link
           </Link>
-          <Link to="/add-joseo" className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-xl transition-colors">
+          <Link to="/add-joseo"
+            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-xl transition-colors">
             <Zap className="w-3.5 h-3.5" /> Joseo
           </Link>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
         {/* Calendario */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
           <div className="flex items-center justify-between mb-3">
@@ -386,7 +386,9 @@ export default function Dashboard() {
               <div className="flex gap-1 border-b border-gray-200">
                 {['semestre', 'materia'].map(t => (
                   <button key={t} type="button" onClick={() => setNewTab(t)}
-                    className={`px-2.5 py-1 text-[10px] font-medium border-b-2 -mb-px transition-colors ${newTab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'}`}>
+                    className={`px-2.5 py-1 text-[10px] font-medium border-b-2 -mb-px transition-colors ${
+                      newTab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400'
+                    }`}>
                     {t === 'semestre' ? 'Semestre' : 'Materia'}
                   </button>
                 ))}
@@ -434,8 +436,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Semester cards — 2 cols on large */}
-        <div className="lg:col-span-2">
+        {/* SemesterCards + ActivityFeed */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
           {loading ? <LoadingSpinner /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {SEMESTERS.map(s => (
@@ -445,7 +447,12 @@ export default function Dashboard() {
               ))}
             </div>
           )}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <h2 className="text-sm font-semibold text-gray-900 mb-3">Actividad reciente</h2>
+            <ActivityFeed />
+          </div>
         </div>
+
       </div>
     </Layout>
   )

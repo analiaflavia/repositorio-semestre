@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, ExternalLink, Trash2, FileText, Link2, Zap, Calendar, User, Pencil, X, Check } from 'lucide-react'
+import { Download, ExternalLink, Trash2, FileText, Zap, Calendar, User, Pencil, X, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { getResourceType } from '../constants/resourceTypes'
@@ -7,6 +7,7 @@ import { downloadFile } from '../services/storageService'
 import { updateResource } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
+import ResourceComments from './ResourceComments'
 
 const PARCIALES = ['Primer parcial', 'Segundo parcial', 'Final', 'General']
 const RESOURCE_TYPES_LIST = ['Clase','Resumen','Banco de preguntas','Presentación','Guía','Tarea','Video','Joseo','Otro']
@@ -17,12 +18,12 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
   const rType   = getResourceType(resource.type)
   const isJoseo = resource.type === 'Joseo'
 
-  const [editing, setEditing] = useState(false)
-  const [title, setTitle] = useState(resource.title)
+  const [editing,     setEditing]     = useState(false)
+  const [title,       setTitle]       = useState(resource.title)
   const [description, setDescription] = useState(resource.description || '')
-  const [type, setType] = useState(resource.type)
-  const [parcial, setParcial] = useState(resource.parcial || 'General')
-  const [saving, setSaving] = useState(false)
+  const [type,        setType]        = useState(resource.type)
+  const [parcial,     setParcial]     = useState(resource.parcial || 'General')
+  const [saving,      setSaving]      = useState(false)
 
   async function handleDownload() {
     try {
@@ -161,6 +162,9 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
                 </a>
               )}
             </div>
+
+            {/* Comentarios y reactions */}
+            <ResourceComments resourceId={resource.id} />
           </>
         )}
       </div>
