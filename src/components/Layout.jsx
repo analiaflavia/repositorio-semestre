@@ -10,15 +10,15 @@ export default function Layout({ children, onSearch }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-      <Navbar onSearch={onSearch} />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Navbar onSearch={onSearch} />
 
-      {/* Mobile sidebar toggle */}
+      {/* Mobile toggle */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-white shadow border border-gray-200"
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-[#0f1729] shadow text-white"
       >
-        <Menu className="w-4 h-4 text-gray-600" />
+        <Menu className="w-4 h-4" />
       </button>
 
       <main className="lg:ml-56 pt-16 min-h-screen">
