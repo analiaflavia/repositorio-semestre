@@ -210,81 +210,6 @@ const S = {
   pool:[], i:0, answered:false, order:[], view:"home", rOk:0, rBad:0
 };
 
-/* ---- SUPABASE PROGRESS ---- */
-const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
-const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
-const BANCO_ID = 'anestesiologia';
-let SB_USER_ID = null;
-
-// Listen for user_id from parent React app
-window.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'SET_USER_ID') {
-    SB_USER_ID = e.data.userId;
-    loadProgressFromDB();
-  }
-});
-
-// Ask parent for user_id on load
-window.parent.postMessage({ type: 'GET_USER_ID' }, '*');
-
-async function saveProgressToDB(progressData) {
-  if (!SB_USER_ID) return;
-  try {
-    await fetch(SB_URL + '/rest/v1/quiz_progress', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY,
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({
-        user_id: SB_USER_ID,
-        banco_id: BANCO_ID,
-        question_index: progressData.index || 0,
-        answer: JSON.stringify(progressData),
-        is_correct: null
-      })
-    });
-  } catch(e) {}
-}
-
-async function loadProgressFromDB() {
-  if (!SB_USER_ID) return;
-  try {
-    const res = await fetch(
-      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + SB_USER_ID + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
-      {
-        headers: {
-          'apikey': SB_KEY,
-          'Authorization': 'Bearer ' + SB_KEY
-        }
-      }
-    );
-    const rows = await res.json();
-    if (rows && rows.length > 0 && rows[0].answer) {
-      const data = JSON.parse(rows[0].answer);
-      applyProgress(data);
-    }
-  } catch(e) {}
-}
-/* ---- FIN SUPABASE ---- */
-
-function applyProgress(data) {
-  if (data.ok)    S.ok    = data.ok;
-  if (data.bad)   S.bad   = data.bad;
-  if (data.seen)  S.seen  = data.seen;
-  if (data.rondas) S.rondas = data.rondas;
-  hud && hud();
-}
-function saveProgress() {
-  const data = {
-    ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas,
-    index: S.i
-  };
-  saveProgressToDB(data);
-}
-
 const $ = s => document.querySelector(s);
 const el = (t,c,h) => { const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
 const pct = (a,b) => b? Math.round(a/b*100) : 0;
@@ -554,10 +479,61 @@ document.addEventListener("keydown",e=>{
 });
 
 
-/* save hook */
-const _origAnswer = answer;
-window.answer = function(...args) { _origAnswer(...args); saveProgress(); };
+/* ---- SUPABASE PROGRESS ---- */
+(function() {
+const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
+const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
+const BANCO_ID = 'anestesiologia';
 
+async function saveProgress() {
+  const uid = localStorage.getItem('sb_user_id');
+  if (!uid) return;
+  try {
+    const data = { ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas };
+    await fetch(SB_URL + '/rest/v1/quiz_progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        user_id: uid,
+        banco_id: BANCO_ID,
+        question_index: S.i || 0,
+        answer: JSON.stringify(data),
+        is_correct: null
+      })
+    });
+  } catch(e) {}
+}
+
+async function loadProgress() {
+  const uid = localStorage.getItem('sb_user_id');
+  if (!uid) return;
+  try {
+    const res = await fetch(
+      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + uid + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
+      { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+    );
+    const rows = await res.json();
+    if (rows && rows[0] && rows[0].answer) {
+      const d = JSON.parse(rows[0].answer);
+      if (d.ok)     S.ok     = d.ok;
+      if (d.bad)    S.bad    = d.bad;
+      if (d.seen)   S.seen   = d.seen;
+      if (d.rondas) S.rondas = d.rondas;
+    }
+  } catch(e) {}
+}
+
+const _origPick = pick;
+window.pick = function(...args) { _origPick(...args); saveProgress(); };
+
+loadProgress();
+})();
+/* ---- FIN SUPABASE ---- */
 
 home();
 </script>

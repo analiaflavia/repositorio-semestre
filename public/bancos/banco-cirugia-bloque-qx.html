@@ -305,80 +305,6 @@ BANK.forEach((q,i)=>q.id=i);
 
 const S={mode:"all",classes:new Set(Object.keys(CLASSES).map(Number)),len:0,skipDone:false,shuffle:true,
   hist:{},tries:0,hits:0,queue:[],i:0,answered:false,lastQueue:null};
-
-/* ---- SUPABASE PROGRESS ---- */
-const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
-const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
-const BANCO_ID = 'cirugia';
-let SB_USER_ID = null;
-
-// Listen for user_id from parent React app
-window.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'SET_USER_ID') {
-    SB_USER_ID = e.data.userId;
-    loadProgressFromDB();
-  }
-});
-
-// Ask parent for user_id on load
-window.parent.postMessage({ type: 'GET_USER_ID' }, '*');
-
-async function saveProgressToDB(progressData) {
-  if (!SB_USER_ID) return;
-  try {
-    await fetch(SB_URL + '/rest/v1/quiz_progress', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY,
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({
-        user_id: SB_USER_ID,
-        banco_id: BANCO_ID,
-        question_index: progressData.index || 0,
-        answer: JSON.stringify(progressData),
-        is_correct: null
-      })
-    });
-  } catch(e) {}
-}
-
-async function loadProgressFromDB() {
-  if (!SB_USER_ID) return;
-  try {
-    const res = await fetch(
-      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + SB_USER_ID + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
-      {
-        headers: {
-          'apikey': SB_KEY,
-          'Authorization': 'Bearer ' + SB_KEY
-        }
-      }
-    );
-    const rows = await res.json();
-    if (rows && rows.length > 0 && rows[0].answer) {
-      const data = JSON.parse(rows[0].answer);
-      applyProgress(data);
-    }
-  } catch(e) {}
-}
-/* ---- FIN SUPABASE ---- */
-
-function applyProgress(data) {
-  if (data.hist !== undefined)  S.hist  = data.hist;
-  if (data.tries !== undefined) S.tries = data.tries;
-  if (data.hits !== undefined)  S.hits  = data.hits;
-  hud && hud();
-}
-function saveProgress() {
-  const data = {
-    hist: S.hist, tries: S.tries, hits: S.hits,
-    index: S.i
-  };
-  saveProgressToDB(data);
-}
 const $=id=>document.getElementById(id);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const wrongIds=()=>Object.keys(S.hist).filter(k=>S.hist[k]===false);
@@ -556,15 +482,6 @@ function home(){
   $('quiz').classList.add('hide');$('res').classList.add('hide');$('home').classList.remove('hide');
   renderModes();renderClasses();updateGo();hud();window.scrollTo(0,0);
 }
-
-
-/* save hook */
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('opt') || e.target.closest && e.target.closest('.opt')) {
-    setTimeout(saveProgress, 200);
-  }
-});
-
 renderModes();renderClasses();updateGo();hud();
 </script>
 </body>
