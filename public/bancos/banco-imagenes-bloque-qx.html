@@ -303,6 +303,27 @@ BANK.forEach((q,i)=>q.id=i);
 
 const S={mode:"all",classes:new Set(Object.keys(CLASSES).map(Number)),len:0,skipDone:false,shuffle:true,
   hist:{},tries:0,hits:0,queue:[],i:0,answered:false,lastQueue:null};
+
+/* ---- PROGRESO EN LOCALSTORAGE ---- */
+const BANCO_KEY = 'banco_imagenes';
+function saveProgress() {
+  try {
+    const data = {hist: S.hist, tries: S.tries, hits: S.hits};
+    localStorage.setItem(BANCO_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(BANCO_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.hist !== undefined) S.hist = data.hist;
+    if (data.tries !== undefined) S.tries = data.tries;
+    if (data.hits !== undefined) S.hits = data.hits;
+  } catch(e) {}
+}
+loadProgress();
+/* ---- FIN PROGRESO ---- */
 const $=id=>document.getElementById(id);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const wrongIds=()=>Object.keys(S.hist).filter(k=>S.hist[k]===false);
@@ -480,6 +501,15 @@ function home(){
   $('quiz').classList.add('hide');$('res').classList.add('hide');$('home').classList.remove('hide');
   renderModes();renderClasses();updateGo();hud();window.scrollTo(0,0);
 }
+
+/* save hook for cirugia/imagenes style */
+const _origPick = typeof pick === 'function' ? pick : null;
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('opt') || e.target.closest('.opt')) {
+    setTimeout(saveProgress, 100);
+  }
+});
+
 renderModes();renderClasses();updateGo();hud();
 </script>
 </body>

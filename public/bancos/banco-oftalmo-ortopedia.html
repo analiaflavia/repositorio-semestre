@@ -210,6 +210,28 @@ const S = {
   pool:[], i:0, answered:false, order:[], view:"home", rOk:0, rBad:0
 };
 
+/* ---- PROGRESO EN LOCALSTORAGE ---- */
+const BANCO_KEY = 'banco_oftalmo-ortopedia';
+function saveProgress() {
+  try {
+    const data = {seen: S.seen, ok: S.ok, bad: S.bad, rondas: S.rondas};
+    localStorage.setItem(BANCO_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(BANCO_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.seen !== undefined) S.seen = data.seen;
+    if (data.ok !== undefined) S.ok = data.ok;
+    if (data.bad !== undefined) S.bad = data.bad;
+    if (data.rondas !== undefined) S.rondas = data.rondas;
+  } catch(e) {}
+}
+loadProgress();
+/* ---- FIN PROGRESO ---- */
+
 const $ = s => document.querySelector(s);
 const el = (t,c,h) => { const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
 const pct = (a,b) => b? Math.round(a/b*100) : 0;
@@ -480,6 +502,11 @@ document.addEventListener("keydown",e=>{
   if(["1","2","3","4"].includes(e.key)){ e.preventDefault(); pick(+e.key-1); }
   if(e.key==="Enter" && S.answered){ e.preventDefault(); next(); }
 });
+
+
+/* save hook */
+const _origAnswer = answer;
+window.answer = function(...args) {{ _origAnswer(...args); saveProgress(); }};
 
 home();
 </script>

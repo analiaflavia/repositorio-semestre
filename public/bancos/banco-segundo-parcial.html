@@ -209,6 +209,42 @@ const S = { mode:"all", sel:new Set(), size:25, skip:false, shuffle:false,
             ok:{}, bad:{}, seen:{}, flag:{}, rounds:0, sumPct:0,
             round:[], roundRes:[], i:0, answered:false, lastPct:0 };
 
+/* ---- PROGRESO EN LOCALSTORAGE ---- */
+const BANCO_KEY = 'banco_segundo-parcial';
+
+function saveProgress() {
+  try {
+    const data = {
+      ok: S.ok,
+      bad: S.bad,
+      seen: S.seen,
+      flag: S.flag,
+      rounds: S.rounds,
+      sumPct: S.sumPct,
+      lastPct: S.lastPct,
+    };
+    localStorage.setItem(BANCO_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(BANCO_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.ok)     S.ok     = data.ok;
+    if (data.bad)    S.bad    = data.bad;
+    if (data.seen)   S.seen   = data.seen;
+    if (data.flag)   S.flag   = data.flag;
+    if (data.rounds) S.rounds = data.rounds;
+    if (data.sumPct) S.sumPct = data.sumPct;
+    if (data.lastPct) S.lastPct = data.lastPct;
+  } catch(e) {}
+}
+
+loadProgress();
+/* ---- FIN PROGRESO ---- */
+
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const app=document.getElementById("app");
 const key=q=>q.s+q.c+"|"+q.t;
@@ -521,6 +557,14 @@ document.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight" && S.answered){ e.preventDefault(); S.i++; ask(); }
   if(e.key==="m"||e.key==="M"){ e.preventDefault(); toggleFlag(); }
 });
+
+
+/* hook to save after each answer */
+const _origAnswer = answer;
+window.answer = function(...args) {
+  _origAnswer(...args);
+  saveProgress();
+};
 
 home();
 </script>
