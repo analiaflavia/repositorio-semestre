@@ -375,23 +375,27 @@ export default function Dashboard() {
           <div>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Selecciona un semestre</h2>
             {loading ? <LoadingSpinner /> : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {SEMESTERS.map((s, i) => {
-                  const isLastRow = i >= lastRowStart
-                  const colStart = isLastRow && remainder === 2 && i === lastRowStart
-                    ? 'sm:col-start-1'
-                    : isLastRow && remainder === 1
-                    ? 'sm:col-start-2'
-                    : ''
-                  return (
-                    <div key={s.id} className={colStart}>
-                      <SemesterCard semester={s}
-                        subjectCount={semesterData[s.id]?.subjectCount || 0}
-                        stats={semesterData[s.id]?.stats || {}} />
-                    </div>
-                  )
-                })}
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
+  {SEMESTERS.map((s, i) => {
+    const total = SEMESTERS.length
+    const remainder = total % 3
+    const lastRowStart = total - remainder
+    const isLastRow = i >= lastRowStart
+    let colClass = 'sm:col-span-2'
+    if (isLastRow && remainder === 2) {
+      colClass = i === lastRowStart ? 'sm:col-span-2 sm:col-start-2' : 'sm:col-span-2'
+    } else if (isLastRow && remainder === 1) {
+      colClass = 'sm:col-span-2 sm:col-start-3'
+    }
+    return (
+      <div key={s.id} className={colClass}>
+        <SemesterCard semester={s}
+          subjectCount={semesterData[s.id]?.subjectCount || 0}
+          stats={semesterData[s.id]?.stats || {}} />
+      </div>
+    )
+  })}
+</div>
             )}
           </div>
 
