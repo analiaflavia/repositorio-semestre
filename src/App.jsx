@@ -13,6 +13,7 @@ import AddJoseo    from './pages/AddJoseo'
 import Recents     from './pages/Recents'
 import Profile     from './pages/Profile'
 import NotFound    from './pages/NotFound'
+import BancoPage   from './pages/BancoPage'
 
 export default function App() {
   return (
@@ -38,6 +39,8 @@ export default function App() {
 
           <Route path="/recents" element={<ProtectedRoute><Recents /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+          <Route path="/bancos/:bancoId" element={<ProtectedRoute><BancoPage /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="/not-found" element={<NotFound />} />

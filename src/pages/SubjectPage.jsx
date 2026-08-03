@@ -15,12 +15,33 @@ import { getAnswerLists, createAnswerList, deleteAnswerList } from '../services/
 import { deleteFile } from '../services/storageService'
 import { SUBJECT_TABS } from '../constants/resourceTypes'
 import { getSemester } from '../constants/semesters'
-import { Upload, Link2, Zap, List, Plus, X } from 'lucide-react'
+import { Upload, Link2, Zap, List, Plus, X, BookOpen } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
 const PARCIALES = ['Todos', 'Primer parcial', 'Segundo parcial', 'Final', 'General']
 const MAIN_TABS = ['Recursos', 'Listas']
+
+const BANCOS_POR_MATERIA = {
+  'EMERGENCIAS': [
+    { id: 'segundo-parcial',   title: 'Banco Segundo Parcial' },
+    { id: 'oftalmo-ortopedia', title: 'Banco Oftalmo y Ortopedia' },
+  ],
+  'CIRUGIA': [
+    { id: 'anestesiologia', title: 'Banco de Anestesiología' },
+    { id: 'cirugia',        title: 'Banco de Cirugía' },
+    { id: 'imagenes',       title: 'Banco de Imágenes' },
+  ],
+}
+
+function getBancosForSubject(name) {
+  if (!name) return []
+  const upper = name.toUpperCase()
+  for (const [key, bancos] of Object.entries(BANCOS_POR_MATERIA)) {
+    if (upper.includes(key)) return bancos
+  }
+  return []
+}
 
 export default function SubjectPage() {
   const { semester, subjectId } = useParams()
@@ -147,6 +168,8 @@ export default function SubjectPage() {
 
   if (loading) return <Layout><LoadingSpinner /></Layout>
 
+  const bancos = getBancosForSubject(subject?.name)
+
   return (
     <Layout>
       <Breadcrumbs items={[
@@ -174,6 +197,27 @@ export default function SubjectPage() {
           </Link>
         </div>
       </div>
+
+      {/* Bancos de preguntas */}
+      {bancos.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bancos de preguntas</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {bancos.map(b => (
+              <Link key={b.id} to={`/bancos/${b.id}`}
+                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
+                  <BookOpen className="w-5 h-5 text-brand-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800 group-hover:text-brand-700 transition-colors">{b.title}</p>
+                  <p className="text-xs text-gray-400">Banco interactivo</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main tabs */}
       <div className="flex gap-1 mb-5 border-b border-gray-100">
