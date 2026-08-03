@@ -8,7 +8,7 @@ import { SEMESTERS } from '../constants/semesters'
 import { getSubjects } from '../services/subjectService'
 import { getSemesterStats, getRecentResources } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
-import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight, FileText, BookOpen, Clock, ExternalLink } from 'lucide-react'
+import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight, FileText, BookOpen, Clock } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { format, parseISO, isFuture, isToday, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -116,7 +116,7 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
           ) : (
             <div className="space-y-1.5">
               {selectedEvents.map(ev => (
-                <EventItem key={ev.id} ev={ev} user={user} semesterSubjects={semesterSubjects} onDelete={onDelete} onUpdate={onUpdate} />
+                <EventItem key={ev.id} ev={ev} user={user} onDelete={onDelete} onUpdate={onUpdate} />
               ))}
               <button onClick={() => onAdd(selectedDay)} className="flex items-center gap-1 px-2 py-1 text-[10px] text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
                 <Plus className="w-3 h-3" /> Agregar otro
@@ -137,9 +137,7 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
 
       {upcomingEvents.length > 0 && !selectedDay && (
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Próximos eventos</p>
-          </div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Próximos eventos</p>
           <div className="space-y-1">
             {upcomingEvents.slice(0, 3).map(ev => {
               const days = differenceInDays(parseISO(ev.date), new Date())
@@ -247,14 +245,6 @@ export default function Dashboard() {
   const totalArchivos = Object.values(semesterData).reduce((acc, s) => acc + (s.stats?.total || 0), 0)
   const totalMaterias = Object.values(semesterData).reduce((acc, s) => acc + (s.subjectCount || 0), 0)
 
-  // Popular tags from recent resources
-  const tagCounts = recentResources.reduce((acc, r) => {
-    const tag = r.subject_name || `Sem. ${r.semester}`
-    acc[tag] = (acc[tag] || 0) + 1
-    return acc
-  }, {})
-  const popularTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 6)
-
   useEffect(() => {
     async function load() {
       const results = await Promise.all(
@@ -311,6 +301,10 @@ export default function Dashboard() {
     setEvents(prev => prev.map(e => e.id === updated.id ? updated : e).sort((a, b) => a.date.localeCompare(b.date)))
   }
 
+  // Centrar últimos semestres si no completan la fila
+  const remainder = SEMESTERS.length % 3
+  const lastRowStart = SEMESTERS.length - remainder
+
   return (
     <Layout>
       {/* Header */}
@@ -351,7 +345,7 @@ export default function Dashboard() {
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
           <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-5 h-5 text-violet-600" />
+            <BookOpen className="w-5 h-5 text-violet-500" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">{SEMESTERS.length}</p>
@@ -377,23 +371,32 @@ export default function Dashboard() {
         {/* Left 2/3 */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Semester cards 3 per row */}
+          {/* Semester cards */}
           <div>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Selecciona un semestre</h2>
             {loading ? <LoadingSpinner /> : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {SEMESTERS.map(s => (
-                  <SemesterCard key={s.id} semester={s}
-                    subjectCount={semesterData[s.id]?.subjectCount || 0}
-                    stats={semesterData[s.id]?.stats || {}} />
-                ))}
+                {SEMESTERS.map((s, i) => {
+                  const isLastRow = i >= lastRowStart
+                  const colStart = isLastRow && remainder === 2 && i === lastRowStart
+                    ? 'sm:col-start-1'
+                    : isLastRow && remainder === 1
+                    ? 'sm:col-start-2'
+                    : ''
+                  return (
+                    <div key={s.id} className={colStart}>
+                      <SemesterCard semester={s}
+                        subjectCount={semesterData[s.id]?.subjectCount || 0}
+                        stats={semesterData[s.id]?.stats || {}} />
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
 
           {/* Archivos recientes + Acciones rápidas */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Tabla archivos recientes */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-900">Archivos recientes</h2>
@@ -404,31 +407,27 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400 text-center py-4">No hay archivos aún.</p>
                 ) : (
                   recentResources.map(r => (
-                    <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <Link
+                      key={r.id}
+                      to={`/semester/${r.semester}/subject/${r.subject_id}`}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                    >
                       <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
                         <FileText className="w-4 h-4 text-brand-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-800 truncate">{r.title}</p>
+                        <p className="text-xs font-medium text-gray-800 truncate group-hover:text-brand-600 transition-colors">{r.title}</p>
                         <p className="text-[10px] text-gray-400">{r.subject_name || `Sem. ${r.semester}`} · {r.uploaded_by_name?.split(' ')[0]}</p>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <span className="text-[10px] text-gray-400">
-                          {format(new Date(r.created_at), 'd MMM', { locale: es })}
-                        </span>
-                        {r.link_url && (
-                          <a href={r.link_url} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 hover:text-brand-600">
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
+                      <span className="text-[10px] text-gray-400 flex-shrink-0">
+                        {format(new Date(r.created_at), 'd MMM', { locale: es })}
+                      </span>
+                    </Link>
                   ))
                 )}
               </div>
             </div>
 
-            {/* Acciones rápidas */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
               <h2 className="text-sm font-semibold text-gray-900 mb-3">Acciones rápidas</h2>
               <div className="space-y-2">
@@ -462,25 +461,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {/* Etiquetas populares */}
-          {popularTags.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <h2 className="text-sm font-semibold text-gray-900 mb-3">Etiquetas populares</h2>
-              <div className="flex flex-wrap gap-2">
-                {popularTags.map(([tag, count]) => (
-                  <span key={tag} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-brand-50 rounded-full text-xs font-medium text-gray-600 hover:text-brand-700 transition-colors cursor-default">
-                    {tag} <span className="text-gray-400 font-normal">{count}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Right 1/3 — Calendario + Actividad */}
+        {/* Right 1/3 */}
         <div className="space-y-6">
-          {/* Calendario */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -528,11 +512,8 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Actividad reciente */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-900">Actividad reciente</h2>
-            </div>
+            <h2 className="text-sm font-semibold text-gray-900 mb-3">Actividad reciente</h2>
             <ActivityFeed />
           </div>
         </div>
