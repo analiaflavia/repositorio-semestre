@@ -522,6 +522,65 @@ document.addEventListener("keydown",e=>{
   if(e.key==="m"||e.key==="M"){ e.preventDefault(); toggleFlag(); }
 });
 
+
+/* ---- SUPABASE PROGRESS ---- */
+(function() {
+const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
+const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
+const BANCO_ID = 'segundo-parcial';
+const SB_UID = new URLSearchParams(window.location.search).get('uid');
+
+async function saveProgress() {
+  if (!SB_UID) return;
+  try {
+    const data = { ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas };
+    await fetch(SB_URL + '/rest/v1/quiz_progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        user_id: SB_UID,
+        banco_id: BANCO_ID,
+        question_index: S.i || 0,
+        answer: JSON.stringify(data),
+        is_correct: null
+      })
+    });
+  } catch(e) {}
+}
+
+async function loadProgress() {
+  if (!SB_UID) return;
+  try {
+    const res = await fetch(
+      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + SB_UID + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
+      { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+    );
+    const rows = await res.json();
+    if (rows && rows[0] && rows[0].answer) {
+      const d = JSON.parse(rows[0].answer);
+      if (d.ok)     S.ok     = d.ok;
+      if (d.bad)    S.bad    = d.bad;
+      if (d.seen)   S.seen   = d.seen;
+      if (d.rondas) S.rondas = d.rondas;
+    }
+  } catch(e) {}
+}
+
+const _origPick = typeof pick === 'function' ? pick : null;
+if (_origPick) window.pick = function(...args) { _origPick(...args); saveProgress(); };
+
+const _origAnswer = typeof answer === 'function' ? answer : null;
+if (_origAnswer) window.answer = function(...args) { _origAnswer(...args); saveProgress(); };
+
+loadProgress();
+})();
+/* ---- FIN SUPABASE ---- */
+
 home();
 </script>
 </body>

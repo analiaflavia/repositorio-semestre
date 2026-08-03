@@ -484,10 +484,10 @@ document.addEventListener("keydown",e=>{
 const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
 const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
 const BANCO_ID = 'anestesiologia';
+const SB_UID = new URLSearchParams(window.location.search).get('uid');
 
 async function saveProgress() {
-  const uid = localStorage.getItem('sb_user_id');
-  if (!uid) return;
+  if (!SB_UID) return;
   try {
     const data = { ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas };
     await fetch(SB_URL + '/rest/v1/quiz_progress', {
@@ -499,7 +499,7 @@ async function saveProgress() {
         'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify({
-        user_id: uid,
+        user_id: SB_UID,
         banco_id: BANCO_ID,
         question_index: S.i || 0,
         answer: JSON.stringify(data),
@@ -510,11 +510,10 @@ async function saveProgress() {
 }
 
 async function loadProgress() {
-  const uid = localStorage.getItem('sb_user_id');
-  if (!uid) return;
+  if (!SB_UID) return;
   try {
     const res = await fetch(
-      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + uid + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
+      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + SB_UID + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
       { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
     );
     const rows = await res.json();
@@ -528,8 +527,11 @@ async function loadProgress() {
   } catch(e) {}
 }
 
-const _origPick = pick;
-window.pick = function(...args) { _origPick(...args); saveProgress(); };
+const _origPick = typeof pick === 'function' ? pick : null;
+if (_origPick) window.pick = function(...args) { _origPick(...args); saveProgress(); };
+
+const _origAnswer = typeof answer === 'function' ? answer : null;
+if (_origAnswer) window.answer = function(...args) { _origAnswer(...args); saveProgress(); };
 
 loadProgress();
 })();

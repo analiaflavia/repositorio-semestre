@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, BookOpen, ExternalLink } from 'lucide-react'
 import Layout from '../components/Layout'
 
 const BANCOS = {
@@ -16,32 +16,7 @@ export default function BancoPage() {
   const { bancoId } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const iframeRef = useRef(null)
   const banco = BANCOS[bancoId]
-
-  // Listen for GET_USER_ID requests from the iframe
-  useEffect(() => {
-    function handleMessage(e) {
-      if (e.data && e.data.type === 'GET_USER_ID' && user?.id) {
-        iframeRef.current?.contentWindow?.postMessage(
-          { type: 'SET_USER_ID', userId: user.id },
-          '*'
-        )
-      }
-    }
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [user])
-
-  // Also send user_id when iframe loads
-  function handleIframeLoad() {
-    if (user?.id) {
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: 'SET_USER_ID', userId: user.id },
-        '*'
-      )
-    }
-  }
 
   if (!banco) return (
     <Layout>
@@ -49,26 +24,32 @@ export default function BancoPage() {
     </Layout>
   )
 
+  function handleOpen() {
+    const url = user?.id ? `${banco.file}?uid=${user.id}` : banco.file
+    window.open(url, '_blank')
+  }
+
   return (
     <Layout>
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-6 flex items-center gap-3">
         <button onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
           <ChevronLeft className="w-4 h-4" /> Volver
         </button>
-        <h1 className="text-lg font-bold text-gray-900">{banco.title}</h1>
       </div>
 
-      <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm"
-        style={{ height: 'calc(100vh - 160px)' }}>
-        <iframe
-          ref={iframeRef}
-          src={banco.file}
-          title={banco.title}
-          className="w-full h-full border-0"
-          onLoad={handleIframeLoad}
-          allow="fullscreen"
-        />
+      <div className="max-w-md mx-auto mt-20 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
+          <BookOpen className="w-8 h-8 text-brand-600" />
+        </div>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">{banco.title}</h1>
+        <p className="text-gray-400 text-sm mb-6">
+          El banco se abre en una pestaña nueva. Tu progreso se guarda automáticamente.
+        </p>
+        <button onClick={handleOpen}
+          className="flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors mx-auto">
+          <ExternalLink className="w-4 h-4" /> Abrir banco
+        </button>
       </div>
     </Layout>
   )
