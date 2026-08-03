@@ -204,7 +204,7 @@ export default function SubjectPage() {
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bancos de preguntas</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {bancos.map(b => (
-              <a key={b.id} href={`/bancos/${b.file}`} target="_blank" rel="noopener noreferrer"
+              <a key={b.id} href={`/bancos/${b.id}`} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group">
                 <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
                   <BookOpen className="w-5 h-5 text-brand-600" />
