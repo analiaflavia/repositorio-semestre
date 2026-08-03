@@ -210,27 +210,80 @@ const S = {
   pool:[], i:0, answered:false, order:[], view:"home", rOk:0, rBad:0
 };
 
-/* ---- PROGRESO EN LOCALSTORAGE ---- */
-const BANCO_KEY = 'banco_oftalmo-ortopedia';
+/* ---- SUPABASE PROGRESS ---- */
+const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
+const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
+const BANCO_ID = 'oftalmo-ortopedia';
+let SB_USER_ID = null;
+
+// Listen for user_id from parent React app
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'SET_USER_ID') {
+    SB_USER_ID = e.data.userId;
+    loadProgressFromDB();
+  }
+});
+
+// Ask parent for user_id on load
+window.parent.postMessage({ type: 'GET_USER_ID' }, '*');
+
+async function saveProgressToDB(progressData) {
+  if (!SB_USER_ID) return;
+  try {
+    await fetch(SB_URL + '/rest/v1/quiz_progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        user_id: SB_USER_ID,
+        banco_id: BANCO_ID,
+        question_index: progressData.index || 0,
+        answer: JSON.stringify(progressData),
+        is_correct: null
+      })
+    });
+  } catch(e) {}
+}
+
+async function loadProgressFromDB() {
+  if (!SB_USER_ID) return;
+  try {
+    const res = await fetch(
+      SB_URL + '/rest/v1/quiz_progress?user_id=eq.' + SB_USER_ID + '&banco_id=eq.' + BANCO_ID + '&select=answer&limit=1',
+      {
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY
+        }
+      }
+    );
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].answer) {
+      const data = JSON.parse(rows[0].answer);
+      applyProgress(data);
+    }
+  } catch(e) {}
+}
+/* ---- FIN SUPABASE ---- */
+
+function applyProgress(data) {
+  if (data.ok)    S.ok    = data.ok;
+  if (data.bad)   S.bad   = data.bad;
+  if (data.seen)  S.seen  = data.seen;
+  if (data.rondas) S.rondas = data.rondas;
+  hud && hud();
+}
 function saveProgress() {
-  try {
-    const data = {seen: S.seen, ok: S.ok, bad: S.bad, rondas: S.rondas};
-    localStorage.setItem(BANCO_KEY, JSON.stringify(data));
-  } catch(e) {}
+  const data = {
+    ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas,
+    index: S.i
+  };
+  saveProgressToDB(data);
 }
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(BANCO_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    if (data.seen !== undefined) S.seen = data.seen;
-    if (data.ok !== undefined) S.ok = data.ok;
-    if (data.bad !== undefined) S.bad = data.bad;
-    if (data.rondas !== undefined) S.rondas = data.rondas;
-  } catch(e) {}
-}
-loadProgress();
-/* ---- FIN PROGRESO ---- */
 
 const $ = s => document.querySelector(s);
 const el = (t,c,h) => { const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
@@ -506,7 +559,8 @@ document.addEventListener("keydown",e=>{
 
 /* save hook */
 const _origAnswer = answer;
-window.answer = function(...args) {{ _origAnswer(...args); saveProgress(); }};
+window.answer = function(...args) { _origAnswer(...args); saveProgress(); };
+
 
 home();
 </script>
