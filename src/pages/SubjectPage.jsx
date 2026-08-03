@@ -24,13 +24,13 @@ const MAIN_TABS = ['Recursos', 'Listas']
 
 const BANCOS_POR_MATERIA = {
   'EMERGENCIAS': [
-    { id: 'segundo-parcial',   title: 'Banco Segundo Parcial' },
-    { id: 'oftalmo-ortopedia', title: 'Banco Oftalmo y Ortopedia' },
+    { id: 'segundo-parcial',   title: 'Banco Segundo Parcial',     file: 'banco-segundo-parcial.html' },
+    { id: 'oftalmo-ortopedia', title: 'Banco Oftalmo y Ortopedia', file: 'banco-oftalmo-ortopedia.html' },
   ],
   'CIRUGIA': [
-    { id: 'anestesiologia', title: 'Banco de Anestesiología' },
-    { id: 'cirugia',        title: 'Banco de Cirugía' },
-    { id: 'imagenes',       title: 'Banco de Imágenes' },
+    { id: 'anestesiologia', title: 'Banco de Anestesiología', file: 'banco-anestesiologia.html' },
+    { id: 'cirugia',        title: 'Banco de Cirugía',        file: 'banco-cirugia-bloque-qx.html' },
+    { id: 'imagenes',       title: 'Banco de Imágenes',       file: 'banco-imagenes-bloque-qx.html' },
   ],
 }
 
@@ -204,7 +204,7 @@ export default function SubjectPage() {
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bancos de preguntas</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {bancos.map(b => (
-              <Link key={b.id} to={`/bancos/${b.id}`}
+              <a key={b.id} href={`/bancos/${b.file}`} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group">
                 <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
                   <BookOpen className="w-5 h-5 text-brand-600" />
@@ -213,7 +213,7 @@ export default function SubjectPage() {
                   <p className="text-sm font-semibold text-gray-800 group-hover:text-brand-700 transition-colors">{b.title}</p>
                   <p className="text-xs text-gray-400">Banco interactivo</p>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
