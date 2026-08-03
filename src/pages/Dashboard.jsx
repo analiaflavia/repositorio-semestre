@@ -6,9 +6,9 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import ActivityFeed from '../components/ActivityFeed'
 import { SEMESTERS } from '../constants/semesters'
 import { getSubjects } from '../services/subjectService'
-import { getSemesterStats } from '../services/resourceService'
+import { getSemesterStats, getRecentResources } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
-import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight, FileText, BookOpen, Clock } from 'lucide-react'
+import { Upload, Link2, Zap, Plus, Calendar, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight, FileText, BookOpen, Clock, ExternalLink } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { format, parseISO, isFuture, isToday, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -16,9 +16,9 @@ import toast from 'react-hot-toast'
 
 const EVENT_TYPES = ['Examen', 'Entrega', 'Otro']
 const TYPE_COLORS = {
-  'Examen':  { dot: 'bg-red-500',  badge: 'bg-red-100 text-red-700',  label: 'text-red-600' },
-  'Entrega': { dot: 'bg-blue-500', badge: 'bg-blue-100 text-blue-700', label: 'text-blue-600' },
-  'Otro':    { dot: 'bg-amber-400', badge: 'bg-amber-100 text-amber-700', label: 'text-amber-600' },
+  'Examen':  { dot: 'bg-red-500',   label: 'text-red-600' },
+  'Entrega': { dot: 'bg-blue-500',  label: 'text-blue-600' },
+  'Otro':    { dot: 'bg-amber-400', label: 'text-amber-600' },
 }
 
 async function getEvents() {
@@ -137,7 +137,9 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
 
       {upcomingEvents.length > 0 && !selectedDay && (
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Próximos</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Próximos eventos</p>
+          </div>
           <div className="space-y-1">
             {upcomingEvents.slice(0, 3).map(ev => {
               const days = differenceInDays(parseISO(ev.date), new Date())
@@ -158,7 +160,7 @@ function MiniCalendar({ events, user, semesterSubjects, onDelete, onUpdate, onAd
   )
 }
 
-function EventItem({ ev, user, semesterSubjects, onDelete, onUpdate }) {
+function EventItem({ ev, user, onDelete, onUpdate }) {
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(ev.title)
   const [date, setDate] = useState(ev.date)
@@ -231,6 +233,7 @@ export default function Dashboard() {
   const [semesterSubjects, setSemesterSubjects] = useState({})
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState([])
+  const [recentResources, setRecentResources] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newDate, setNewDate] = useState('')
@@ -243,6 +246,14 @@ export default function Dashboard() {
   const newSubjects = semesterSubjects[newSemester] || []
   const totalArchivos = Object.values(semesterData).reduce((acc, s) => acc + (s.stats?.total || 0), 0)
   const totalMaterias = Object.values(semesterData).reduce((acc, s) => acc + (s.subjectCount || 0), 0)
+
+  // Popular tags from recent resources
+  const tagCounts = recentResources.reduce((acc, r) => {
+    const tag = r.subject_name || `Sem. ${r.semester}`
+    acc[tag] = (acc[tag] || 0) + 1
+    return acc
+  }, {})
+  const popularTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 6)
 
   useEffect(() => {
     async function load() {
@@ -258,6 +269,7 @@ export default function Dashboard() {
     }
     load()
     getEvents().then(setEvents).catch(() => {})
+    getRecentResources(5).then(setRecentResources).catch(() => {})
   }, [])
 
   function handleAddFromDay(day) {
@@ -302,49 +314,59 @@ export default function Dashboard() {
   return (
     <Layout>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'} 👋
-        </h1>
-        <p className="text-gray-400 text-sm mt-0.5">Repositorio del Semestre — Derecho Médico</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'} 👋
+          </h1>
+          <p className="text-gray-400 text-sm mt-0.5">Bienvenida a tu repositorio académico de Derecho Médico.</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Calendar className="w-4 h-4" />
+          {format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })}
+        </div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#0f1729] text-white rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-5 h-5 text-brand-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalArchivos}</p>
-            <p className="text-xs text-white/50">Total archivos</p>
+            <p className="text-2xl font-bold text-gray-900">{totalArchivos}</p>
+            <p className="text-xs text-gray-500 font-medium">Total archivos</p>
+            <p className="text-[10px] text-gray-400">En tu repositorio</p>
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-5 h-5 text-brand-600" />
+          <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <BookOpen className="w-5 h-5 text-indigo-600" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">{totalMaterias}</p>
-            <p className="text-xs text-gray-400">Materias</p>
+            <p className="text-xs text-gray-500 font-medium">Materias</p>
+            <p className="text-[10px] text-gray-400">Activas</p>
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <Zap className="w-5 h-5 text-amber-500" />
+          <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
+            <BookOpen className="w-5 h-5 text-violet-600" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">{SEMESTERS.length}</p>
-            <p className="text-xs text-gray-400">Semestres</p>
+            <p className="text-xs text-gray-500 font-medium">Semestres</p>
+            <p className="text-[10px] text-gray-400">En tu repositorio</p>
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
             <Clock className="w-5 h-5 text-green-500" />
           </div>
           <div>
             <p className="text-sm font-bold text-gray-900">Hoy</p>
-            <p className="text-xs text-gray-400">Última subida</p>
+            <p className="text-xs text-gray-500 font-medium">Última subida</p>
+            <p className="text-[10px] text-gray-400">{format(new Date(), 'hh:mm a')}</p>
           </div>
         </div>
       </div>
@@ -352,12 +374,14 @@ export default function Dashboard() {
       {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Left — semester cards */}
+        {/* Left 2/3 */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Semester cards 3 per row */}
           <div>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Selecciona un semestre</h2>
             {loading ? <LoadingSpinner /> : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {SEMESTERS.map(s => (
                   <SemesterCard key={s.id} semester={s}
                     subjectCount={semesterData[s.id]?.subjectCount || 0}
@@ -367,33 +391,94 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Acciones rápidas */}
-          <div>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">Acciones rápidas</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <Link to="/upload" className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-                  <Upload className="w-5 h-5 text-brand-600" />
-                </div>
-                <span className="text-xs font-medium text-gray-700">Subir archivo</span>
-              </Link>
-              <Link to="/add-link" className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                  <Link2 className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="text-xs font-medium text-gray-700">Agregar link</span>
-              </Link>
-              <Link to="/add-joseo" className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-amber-200 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-amber-500" />
-                </div>
-                <span className="text-xs font-medium text-gray-700">Joseo</span>
-              </Link>
+          {/* Archivos recientes + Acciones rápidas */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Tabla archivos recientes */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-900">Archivos recientes</h2>
+                <Link to="/recents" className="text-xs text-brand-600 hover:underline">Ver todos →</Link>
+              </div>
+              <div className="space-y-2">
+                {recentResources.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">No hay archivos aún.</p>
+                ) : (
+                  recentResources.map(r => (
+                    <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4 h-4 text-brand-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-800 truncate">{r.title}</p>
+                        <p className="text-[10px] text-gray-400">{r.subject_name || `Sem. ${r.semester}`} · {r.uploaded_by_name?.split(' ')[0]}</p>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className="text-[10px] text-gray-400">
+                          {format(new Date(r.created_at), 'd MMM', { locale: es })}
+                        </span>
+                        {r.link_url && (
+                          <a href={r.link_url} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 hover:text-brand-600">
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Acciones rápidas */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3">Acciones rápidas</h2>
+              <div className="space-y-2">
+                <Link to="/upload" className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-brand-50 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-brand-50 group-hover:bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-4 h-4 text-brand-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-800">Subir archivo</p>
+                    <p className="text-[10px] text-gray-400">Agregar nuevo recurso</p>
+                  </div>
+                </Link>
+                <Link to="/add-link" className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-green-50 group-hover:bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <Link2 className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-800">Agregar link</p>
+                    <p className="text-[10px] text-gray-400">Crear o vincular materia</p>
+                  </div>
+                </Link>
+                <Link to="/add-joseo" className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-50 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-800">Crear joseo</p>
+                    <p className="text-[10px] text-gray-400">Registrar nuevo joseo</p>
+                  </div>
+                </Link>
+              </div>
             </div>
           </div>
+
+          {/* Etiquetas populares */}
+          {popularTags.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3">Etiquetas populares</h2>
+              <div className="flex flex-wrap gap-2">
+                {popularTags.map(([tag, count]) => (
+                  <span key={tag} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-brand-50 rounded-full text-xs font-medium text-gray-600 hover:text-brand-700 transition-colors cursor-default">
+                    {tag} <span className="text-gray-400 font-normal">{count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right — Calendario + Actividad */}
+        {/* Right 1/3 — Calendario + Actividad */}
         <div className="space-y-6">
           {/* Calendario */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -445,7 +530,9 @@ export default function Dashboard() {
 
           {/* Actividad reciente */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h2 className="text-sm font-semibold text-gray-900 mb-3">Actividad reciente</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-900">Actividad reciente</h2>
+            </div>
             <ActivityFeed />
           </div>
         </div>

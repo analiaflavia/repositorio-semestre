@@ -26,8 +26,7 @@ export default function Sidebar({ open, onClose }) {
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-          <div>
+<img src="/logo.png" alt="Logo" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />          <div>
             <p className="text-sm font-bold text-white leading-tight">DERECHO MÉDICO</p>
             <p className="text-[10px] text-white/40 leading-tight">Repositorio del Semestre</p>
           </div>
