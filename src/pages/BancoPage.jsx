@@ -24,8 +24,7 @@ export default function BancoPage() {
   )
 
   function handleOpen() {
-    const loaderUrl = `/banco-loader.html?uid=${user?.id || ''}&banco=${banco.file}`
-    window.open(loaderUrl, '_blank')
+    window.open(`/bancos/${banco.file}`, '_blank')
   }
 
   return (
@@ -43,7 +42,7 @@ export default function BancoPage() {
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">{banco.title}</h1>
         <p className="text-gray-400 text-sm mb-6">
-          El banco se abre en una pestaña nueva. Tu progreso se guarda automáticamente.
+          El banco se abre en una pestaña nueva. Tu progreso se guarda en este dispositivo.
         </p>
         <button onClick={handleOpen}
           className="flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors mx-auto">
