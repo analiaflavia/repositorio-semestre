@@ -524,5 +524,25 @@ document.addEventListener("keydown",e=>{
 
 home();
 </script>
+
+<script>
+(function() {
+  var KEY = 'banco_segundo-parcial';
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ ok: S.ok, bad: S.bad, seen: S.seen, flag: S.flag, rounds: S.rounds, sumPct: S.sumPct, lastPct: S.lastPct })); } catch(e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if(d.ok)S.ok=d.ok;if(d.bad)S.bad=d.bad;if(d.seen)S.seen=d.seen;if(d.flag)S.flag=d.flag;if(d.rounds)S.rounds=d.rounds;if(d.sumPct)S.sumPct=d.sumPct;if(d.lastPct)S.lastPct=d.lastPct;
+    } catch(e) {}
+  }
+  load();
+  var orig = window['answer'];
+  if (orig) window['answer'] = function() { orig.apply(this, arguments); save(); };
+})();
+</script>
 </body>
 </html>

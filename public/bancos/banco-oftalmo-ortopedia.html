@@ -483,5 +483,25 @@ document.addEventListener("keydown",e=>{
 
 home();
 </script>
+
+<script>
+(function() {
+  var KEY = 'banco_oftalmo-ortopedia';
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ ok: S.ok, bad: S.bad, seen: S.seen, rondas: S.rondas })); } catch(e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if(d.ok)S.ok=d.ok;if(d.bad)S.bad=d.bad;if(d.seen)S.seen=d.seen;if(d.rondas)S.rondas=d.rondas;
+    } catch(e) {}
+  }
+  load();
+  var orig = window['pick'];
+  if (orig) window['pick'] = function() { orig.apply(this, arguments); save(); };
+})();
+</script>
 </body>
 </html>

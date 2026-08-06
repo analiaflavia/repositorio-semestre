@@ -484,5 +484,25 @@ function home(){
 }
 renderModes();renderClasses();updateGo();hud();
 </script>
+
+<script>
+(function() {
+  var KEY = 'banco_cirugia';
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ hist: S.hist, tries: S.tries, hits: S.hits })); } catch(e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if(d.hist!==undefined)S.hist=d.hist;if(d.tries!==undefined)S.tries=d.tries;if(d.hits!==undefined)S.hits=d.hits;
+    } catch(e) {}
+  }
+  load();
+  var orig = window['pick'];
+  if (orig) window['pick'] = function() { orig.apply(this, arguments); save(); };
+})();
+</script>
 </body>
 </html>
