@@ -14,7 +14,6 @@ import Recents     from './pages/Recents'
 import Profile     from './pages/Profile'
 import NotFound    from './pages/NotFound'
 import BancoPage   from './pages/BancoPage'
-import BancoAnestesiologia from './pages/BancoAnestesiologia'
 
 export default function App() {
   return (
@@ -42,7 +41,6 @@ export default function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           <Route path="/bancos/:bancoId" element={<ProtectedRoute><BancoPage /></ProtectedRoute>} />
-          <Route path="/bancos/anestesiologia" element={<ProtectedRoute><BancoAnestesiologia /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="/not-found" element={<NotFound />} />
