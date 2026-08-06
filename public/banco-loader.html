@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cargando banco...</title>
+</head>
+<body>
+<script>
+const params = new URLSearchParams(window.location.search);
+const uid = params.get('uid');
+const banco = params.get('banco');
+
+if (uid) {
+  sessionStorage.setItem('sb_user_id', uid);
+  localStorage.setItem('sb_user_id', uid);
+}
+
+if (banco) {
+  window.location.replace('/bancos/' + banco + '?uid=' + uid);
+} else {
+  window.location.replace('/dashboard');
+}
+</script>
+</body>
+</html>

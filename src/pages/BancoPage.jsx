@@ -1,15 +1,14 @@
-import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChevronLeft, BookOpen, ExternalLink } from 'lucide-react'
 import Layout from '../components/Layout'
 
 const BANCOS = {
-  'segundo-parcial':   { title: 'Banco Segundo Parcial',     file: '/bancos/banco-segundo-parcial.html' },
-  'anestesiologia':    { title: 'Banco de Anestesiología',   file: '/bancos/banco-anestesiologia.html' },
-  'cirugia':           { title: 'Banco de Cirugía',          file: '/bancos/banco-cirugia-bloque-qx.html' },
-  'imagenes':          { title: 'Banco de Imágenes',         file: '/bancos/banco-imagenes-bloque-qx.html' },
-  'oftalmo-ortopedia': { title: 'Banco Oftalmo y Ortopedia', file: '/bancos/banco-oftalmo-ortopedia.html' },
+  'segundo-parcial':   { title: 'Banco Segundo Parcial',     file: 'banco-segundo-parcial.html' },
+  'anestesiologia':    { title: 'Banco de Anestesiología',   file: 'banco-anestesiologia.html' },
+  'cirugia':           { title: 'Banco de Cirugía',          file: 'banco-cirugia-bloque-qx.html' },
+  'imagenes':          { title: 'Banco de Imágenes',         file: 'banco-imagenes-bloque-qx.html' },
+  'oftalmo-ortopedia': { title: 'Banco Oftalmo y Ortopedia', file: 'banco-oftalmo-ortopedia.html' },
 }
 
 export default function BancoPage() {
@@ -18,17 +17,6 @@ export default function BancoPage() {
   const navigate = useNavigate()
   const banco = BANCOS[bancoId]
 
-  useEffect(() => {
-    if (user?.id) {
-      try {
-        localStorage.setItem('sb_user_id', user.id)
-        const bc = new BroadcastChannel('supabase_uid')
-        bc.postMessage({ uid: user.id })
-        setTimeout(() => bc.close(), 1000)
-      } catch(e) {}
-    }
-  }, [user])
-
   if (!banco) return (
     <Layout>
       <p className="text-gray-500 text-center mt-20">Banco no encontrado.</p>
@@ -36,16 +24,8 @@ export default function BancoPage() {
   )
 
   function handleOpen() {
-    if (user?.id) {
-      try {
-        localStorage.setItem('sb_user_id', user.id)
-        const bc = new BroadcastChannel('supabase_uid')
-        bc.postMessage({ uid: user.id })
-        setTimeout(() => bc.close(), 2000)
-      } catch(e) {}
-    }
-    const url = user?.id ? `${banco.file}?uid=${user.id}` : banco.file
-    window.open(url, '_blank')
+    const loaderUrl = `/banco-loader.html?uid=${user?.id || ''}&banco=${banco.file}`
+    window.open(loaderUrl, '_blank')
   }
 
   return (

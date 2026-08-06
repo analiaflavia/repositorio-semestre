@@ -528,12 +528,21 @@ document.addEventListener("keydown",e=>{
   const SB_URL = 'https://bvjfkyygdjawmoviqfyu.supabase.co';
   const SB_KEY = 'sb_publishable_wk68t6dPJnsxeue8Zq1ssw_wyVWpmBa';
   const BANCO_ID = 'segundo-parcial';
-  const SB_UID = window.__SUPABASE_UID__ || new URLSearchParams(window.location.search).get('uid');
+  
+  // Read uid from all possible sources - sessionStorage first (set by loader)
+  const SB_UID = sessionStorage.getItem('sb_user_id')
+              || localStorage.getItem('sb_user_id')
+              || new URLSearchParams(window.location.search).get('uid');
+
+  if (SB_UID) {
+    sessionStorage.setItem('sb_user_id', SB_UID);
+    localStorage.setItem('sb_user_id', SB_UID);
+  }
 
   async function saveProgress() {
     if (!SB_UID) return;
     try {
-      const data = { ok: S.ok, bad: S.bad, seen: S.seen, flag: S.flag, rounds: S.rounds, sumPct: S.sumPct, lastPct: S.lastPct };
+      const data = {{ ok: S.ok, bad: S.bad, seen: S.seen, flag: S.flag, rounds: S.rounds, sumPct: S.sumPct, lastPct: S.lastPct }};
       await fetch(SB_URL + '/rest/v1/quiz_progress', {
         method: 'POST',
         headers: {
