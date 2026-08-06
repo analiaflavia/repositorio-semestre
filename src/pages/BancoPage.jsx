@@ -18,6 +18,17 @@ export default function BancoPage() {
   const navigate = useNavigate()
   const banco = BANCOS[bancoId]
 
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        localStorage.setItem('sb_user_id', user.id)
+        const bc = new BroadcastChannel('supabase_uid')
+        bc.postMessage({ uid: user.id })
+        setTimeout(() => bc.close(), 1000)
+      } catch(e) {}
+    }
+  }, [user])
+
   if (!banco) return (
     <Layout>
       <p className="text-gray-500 text-center mt-20">Banco no encontrado.</p>
@@ -25,6 +36,14 @@ export default function BancoPage() {
   )
 
   function handleOpen() {
+    if (user?.id) {
+      try {
+        localStorage.setItem('sb_user_id', user.id)
+        const bc = new BroadcastChannel('supabase_uid')
+        bc.postMessage({ uid: user.id })
+        setTimeout(() => bc.close(), 2000)
+      } catch(e) {}
+    }
     const url = user?.id ? `${banco.file}?uid=${user.id}` : banco.file
     window.open(url, '_blank')
   }
