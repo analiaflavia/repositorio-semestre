@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, ExternalLink, Trash2, FileText, Zap, Calendar, User, Pencil, X, Check } from 'lucide-react'
+import { Download, ExternalLink, Trash2, Zap, Calendar, User, Pencil, X, Check, MessageCircle, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { getResourceType } from '../constants/resourceTypes'
@@ -12,13 +12,27 @@ import ResourceComments from './ResourceComments'
 const PARCIALES = ['Primer parcial', 'Segundo parcial', 'Final', 'General']
 const RESOURCE_TYPES_LIST = ['Clase','Resumen','Banco de preguntas','Presentación','Guía','Tarea','Video','Joseo','Otro']
 
+const TYPE_DOT = {
+  'Clase':              '#6E7E9B',
+  'Resumen':            '#5F8A8B',
+  'Banco de preguntas': '#8A7CA8',
+  'Presentación':       '#9B7B6B',
+  'Guía':               '#16294A',
+  'Tarea':              '#A8843F',
+  'Video':              '#6E7E9B',
+  'Joseo':              '#B89653',
+  'Otro':               '#8B97AE',
+}
+
 export default function ResourceCard({ resource, onDelete, onUpdate }) {
   const { user } = useAuth()
   const isOwner = user?.id === resource.uploaded_by
   const rType   = getResourceType(resource.type)
   const isJoseo = resource.type === 'Joseo'
+  const dot     = TYPE_DOT[resource.type] || TYPE_DOT['Otro']
 
   const [editing,     setEditing]     = useState(false)
+  const [showThread,  setShowThread]  = useState(false)
   const [title,       setTitle]       = useState(resource.title)
   const [description, setDescription] = useState(resource.description || '')
   const [type,        setType]        = useState(resource.type)
@@ -42,7 +56,7 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
       setEditing(false)
       if (onUpdate) onUpdate(updated)
     } catch (err) {
-      toast.error('Error al actualizar: ' + (err.message || ''))
+      toast.error('No se pudo actualizar: ' + (err.message || ''))
     } finally {
       setSaving(false)
     }
@@ -57,90 +71,97 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
   }
 
   return (
-    <div className={`group relative bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${
-      isJoseo ? 'border-amber-200 bg-amber-50/30' : 'border-gray-100'
+    <div className={`group relative flex flex-col bg-white rounded-xl border shadow-card hover:shadow-lift transition-all duration-200 overflow-hidden ${
+      isJoseo ? 'border-gold-300' : 'border-paper-rule'
     }`}>
-      {isJoseo && <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-xl" />}
+      {isJoseo && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-gold-500" />}
 
-      <div className="p-4 pl-5">
+      <div className="p-5">
         {editing ? (
           <div className="space-y-3">
             <input value={title} onChange={e => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full px-3 py-2 text-sm border border-paper-rule rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
               placeholder="Título" />
             <select value={type} onChange={e => setType(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              className="w-full px-3 py-2 text-sm border border-paper-rule rounded-lg bg-white focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100">
               {RESOURCE_TYPES_LIST.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             <select value={parcial} onChange={e => setParcial(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              className="w-full px-3 py-2 text-sm border border-paper-rule rounded-lg bg-white focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100">
               {PARCIALES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               rows={2} placeholder="Descripción (opcional)"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none" />
+              className="w-full px-3 py-2 text-sm border border-paper-rule rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100 resize-none" />
             <div className="flex gap-2">
               <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
-                <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando...' : 'Guardar'}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-ink-800 hover:bg-ink-900 text-white text-xs font-semibold rounded-lg transition-colors">
+                <Check className="w-3.5 h-3.5" /> {saving ? 'Guardando…' : 'Guardar'}
               </button>
               <button onClick={handleCancel}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors">
+                className="flex items-center gap-1.5 px-3.5 py-2 text-ink-500 hover:bg-paper text-xs font-semibold rounded-lg transition-colors">
                 <X className="w-3.5 h-3.5" /> Cancelar
               </button>
             </div>
           </div>
         ) : (
           <>
-            <div className="flex items-start gap-3 mb-3">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 ${rType.color}`}>
-                {isJoseo ? <Zap className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-2 flex-wrap">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${rType.color}`}>
-                    {rType.icon} {rType.label}
+            {/* Metadatos superiores */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: dot }} />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500">
+                    {rType.label}
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] bg-gray-100 text-gray-500">
-                    {resource.resource_kind === 'file' ? '📎 Archivo' : '🔗 Link'}
-                  </span>
-                  {resource.parcial && resource.parcial !== 'General' && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] bg-indigo-100 text-indigo-700 font-semibold">
+                </span>
+                <span className="w-px h-3 bg-paper-rule" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-300">
+                  {resource.resource_kind === 'file' ? 'Archivo' : 'Link'}
+                </span>
+                {resource.parcial && resource.parcial !== 'General' && (
+                  <>
+                    <span className="w-px h-3 bg-paper-rule" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold-700">
                       {resource.parcial}
                     </span>
-                  )}
-                </div>
-                <h3 className="font-semibold text-gray-900 text-sm mt-1.5 line-clamp-2 leading-snug">
-                  {resource.title}
-                </h3>
+                  </>
+                )}
               </div>
 
-              <div className="flex gap-1 flex-shrink-0">
+              <div className="flex gap-0.5 flex-shrink-0">
                 {isOwner && (
-                  <button onClick={() => setEditing(true)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-blue-50 text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-all"
-                    title="Editar">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {isOwner && (
-                  <button onClick={() => onDelete(resource)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-all"
-                    title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <>
+                    <button onClick={() => setEditing(true)} title="Editar"
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-md text-ink-300 hover:text-ink-700 hover:bg-paper transition-all">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => onDelete(resource)} title="Eliminar"
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-md text-ink-300 hover:text-red-600 hover:bg-red-50 transition-all">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </>
                 )}
               </div>
             </div>
 
+            {/* Título */}
+            <h3 className="font-semibold text-ink-900 text-[15px] leading-snug line-clamp-2">
+              {isJoseo && <Zap className="inline w-3.5 h-3.5 text-gold-500 mr-1 -mt-0.5" />}
+              {resource.title}
+            </h3>
+
             {resource.description && (
-              <p className="text-xs text-gray-500 mb-3 line-clamp-2 leading-relaxed">{resource.description}</p>
+              <p className="text-[13px] text-ink-400 mt-2 line-clamp-2 leading-relaxed">
+                {resource.description}
+              </p>
             )}
 
-            <div className="flex items-center gap-3 text-[11px] text-gray-400 mb-3">
+            {/* Firma */}
+            <div className="flex items-center gap-3 font-mono text-[10px] text-ink-300 mt-3">
               <span className="flex items-center gap-1">
                 <User className="w-3 h-3" />
-                {resource.uploaded_by_name || 'Usuario'}
+                {resource.uploaded_by_name?.split(' ')[0] || 'Usuario'}
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -148,26 +169,41 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
               </span>
             </div>
 
-            <div className="flex gap-2 pt-3 border-t border-gray-50">
+            {/* Acciones */}
+            <div className="flex items-center gap-2 mt-4">
               {resource.resource_kind === 'file' && resource.file_path && (
                 <button onClick={handleDownload}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-xs font-medium transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink-800 hover:bg-ink-900 text-white text-xs font-semibold transition-colors">
                   <Download className="w-3.5 h-3.5" /> Descargar
                 </button>
               )}
               {resource.link_url && (
                 <a href={resource.link_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-xs font-medium transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-paper-rule hover:border-ink-300 hover:bg-paper text-ink-700 text-xs font-semibold transition-colors">
                   <ExternalLink className="w-3.5 h-3.5" /> Abrir link
                 </a>
               )}
-            </div>
 
-            {/* Comentarios y reactions */}
-            <ResourceComments resourceId={resource.id} />
+              <button
+                onClick={() => setShowThread(v => !v)}
+                aria-expanded={showThread}
+                className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-paper text-xs font-medium transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Comentarios</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${showThread ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </>
         )}
       </div>
+
+      {/* Hilo de comentarios y reacciones */}
+      {!editing && showThread && (
+        <div className="border-t border-paper-rule bg-paper-soft px-5 py-4">
+          <ResourceComments resourceId={resource.id} />
+        </div>
+      )}
     </div>
   )
 }
