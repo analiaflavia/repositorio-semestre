@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import FilterBar from '../components/FilterBar'
 import SearchBar from '../components/SearchBar'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
+import RequestBoard from '../components/RequestBoard'
 import { getSubject } from '../services/subjectService'
 import { getResources, deleteResource } from '../services/resourceService'
 import { getAnswerLists, createAnswerList, deleteAnswerList } from '../services/answerListService'
@@ -227,7 +228,11 @@ export default function SubjectPage() {
           </div>
         </section>
       )}
-
+<RequestBoard
+        semester={semester}
+        subjectId={subjectId}
+        subjectName={subject?.name}
+      />
       {/* Tabs principales */}
       <div className="flex gap-6 mb-6 border-b border-paper-rule">
         {MAIN_TABS.map(tab => (
