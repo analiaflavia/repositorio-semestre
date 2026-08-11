@@ -15,7 +15,7 @@ import { getAnswerLists, createAnswerList, deleteAnswerList } from '../services/
 import { deleteFile } from '../services/storageService'
 import { SUBJECT_TABS } from '../constants/resourceTypes'
 import { getSemester } from '../constants/semesters'
-import { Upload, Link2, Zap, List, Plus, X, BookOpen } from 'lucide-react'
+import { Upload, Link2, Zap, List, Plus, X, BookOpen, ArrowUpRight } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
@@ -79,7 +79,7 @@ export default function SubjectPage() {
       setResources(res)
       setAnswerLists(lists)
     } catch {
-      toast.error('Error al cargar los recursos')
+      toast.error('No se pudieron cargar los recursos')
     } finally {
       setLoading(false)
     }
@@ -117,7 +117,7 @@ export default function SubjectPage() {
       toast.success('Recurso eliminado')
       setDeleteTarget(null)
     } catch (err) {
-      toast.error('Error al eliminar: ' + (err.message || ''))
+      toast.error('No se pudo eliminar: ' + (err.message || ''))
     } finally {
       setDeleting(false)
     }
@@ -132,7 +132,7 @@ export default function SubjectPage() {
       toast.success('Lista eliminada')
       setDeleteList(null)
     } catch (err) {
-      toast.error('Error al eliminar: ' + (err.message || ''))
+      toast.error('No se pudo eliminar: ' + (err.message || ''))
     } finally {
       setDeletingList(false)
     }
@@ -155,7 +155,7 @@ export default function SubjectPage() {
       setShowNewList(false)
       toast.success('Lista creada')
     } catch (err) {
-      toast.error('Error al crear lista: ' + (err.message || ''))
+      toast.error('No se pudo crear la lista: ' + (err.message || ''))
     } finally {
       setCreatingList(false)
     }
@@ -174,25 +174,31 @@ export default function SubjectPage() {
     <Layout>
       <Breadcrumbs items={[
         { label: `Semestre ${semester}`, href: `/semester/${semester}` },
-        { label: subject?.name || '...' },
+        { label: subject?.name || '…' },
       ]} />
 
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mt-4 mb-8 pb-6 border-b border-paper-rule">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{subject?.name}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{semInfo?.label} · {resources.length} recurso{resources.length !== 1 ? 's' : ''}</p>
+          <p className="eyebrow mb-2">{semInfo?.label}</p>
+          <h1 className="font-display text-[32px] leading-none font-semibold tracking-tight text-ink-900">
+            {subject?.name}
+          </h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-300 mt-3">
+            {resources.length} recurso{resources.length !== 1 ? 's' : ''}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Link to={`/upload?semester=${semester}&subject=${subjectId}&subjectName=${encodeURIComponent(subject?.name || '')}`}
-            className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-xl transition-colors">
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-ink-800 hover:bg-ink-900 text-white text-xs font-semibold rounded-lg transition-colors">
             <Upload className="w-3.5 h-3.5" /> Subir archivo
           </Link>
           <Link to={`/add-link?semester=${semester}&subject=${subjectId}&subjectName=${encodeURIComponent(subject?.name || '')}`}
-            className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-xl transition-colors">
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-paper-rule hover:border-ink-300 hover:bg-white text-ink-700 text-xs font-semibold rounded-lg transition-colors">
             <Link2 className="w-3.5 h-3.5" /> Agregar link
           </Link>
           <Link to={`/add-joseo?semester=${semester}&subject=${subjectId}&subjectName=${encodeURIComponent(subject?.name || '')}`}
-            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-xl transition-colors">
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-gold-500 hover:bg-gold-400 text-ink-900 text-xs font-semibold rounded-lg transition-colors">
             <Zap className="w-3.5 h-3.5" /> Joseo
           </Link>
         </div>
@@ -200,38 +206,41 @@ export default function SubjectPage() {
 
       {/* Bancos de preguntas */}
       {bancos.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bancos de preguntas</h2>
+        <section className="mb-8">
+          <p className="eyebrow mb-4">Bancos de preguntas</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {bancos.map(b => (
               <a key={b.id} href={`/bancos/${b.id}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
-                  <BookOpen className="w-5 h-5 text-brand-600" />
+                className="group flex items-center gap-3.5 p-4 bg-ink-900 rounded-xl hover:shadow-lift hover:-translate-y-0.5 transition-all duration-200">
+                <div className="w-9 h-9 rounded-lg bg-white/[0.07] flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-[18px] h-[18px] text-gold-400" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800 group-hover:text-brand-700 transition-colors">{b.title}</p>
-                  <p className="text-xs text-gray-400">Banco interactivo</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold text-white truncate">{b.title}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/35 mt-0.5">
+                    Banco interactivo
+                  </p>
                 </div>
+                <ArrowUpRight className="w-4 h-4 text-white/25 group-hover:text-gold-400 transition-colors flex-shrink-0" />
               </a>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Main tabs */}
-      <div className="flex gap-1 mb-5 border-b border-gray-100">
+      {/* Tabs principales */}
+      <div className="flex gap-6 mb-6 border-b border-paper-rule">
         {MAIN_TABS.map(tab => (
           <button key={tab} onClick={() => setMainTab(tab)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              mainTab === tab
-                ? 'border-brand-600 text-brand-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+            className={`relative pb-3 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
+              mainTab === tab ? 'text-ink-900' : 'text-ink-300 hover:text-ink-500'
             }`}>
-            {tab === 'Listas' && <List className="w-3.5 h-3.5 inline mr-1.5" />}
             {tab}
             {tab === 'Listas' && answerLists.length > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-500">{answerLists.length}</span>
+              <span className="ml-1.5 text-ink-300">({answerLists.length})</span>
+            )}
+            {mainTab === tab && (
+              <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-gold-500 rounded-full" />
             )}
           </button>
         ))}
@@ -239,32 +248,33 @@ export default function SubjectPage() {
 
       {mainTab === 'Recursos' && (
         <>
-          <div className="flex gap-1 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+          <div className="flex gap-1 overflow-x-auto pb-1 mb-3 scrollbar-hide">
             {SUBJECT_TABS.map(tab => {
               const count = tabCount(tab.value)
+              const active = activeTab === tab.value
               return (
                 <button key={tab.value} onClick={() => setActiveTab(tab.value)}
-                  className={`flex-shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                    activeTab === tab.value
-                      ? tab.value === 'Joseo' ? 'bg-amber-100 text-amber-700' : 'bg-brand-50 text-brand-700'
-                      : 'text-gray-500 hover:bg-gray-100'
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                    active ? 'bg-ink-900 text-white' : 'text-ink-400 hover:bg-white hover:text-ink-700'
                   }`}>
                   {tab.label}
                   {count > 0 && (
-                    <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                      activeTab === tab.value ? 'bg-white text-gray-700' : 'bg-gray-100 text-gray-500'
-                    }`}>{count}</span>
+                    <span className={`ml-1.5 font-mono text-[10px] ${active ? 'text-white/50' : 'text-ink-300'}`}>
+                      {count}
+                    </span>
                   )}
                 </button>
               )
             })}
           </div>
 
-          <div className="flex gap-1 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+          <div className="flex gap-1 overflow-x-auto pb-1 mb-5 scrollbar-hide">
             {PARCIALES.map(p => (
               <button key={p} onClick={() => setActiveParcial(p)}
-                className={`flex-shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                  activeParcial === p ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'
+                className={`flex-shrink-0 px-3 py-1.5 rounded-md font-mono text-[10px] uppercase tracking-[0.12em] transition-colors whitespace-nowrap ${
+                  activeParcial === p
+                    ? 'bg-gold-100 text-gold-700'
+                    : 'text-ink-300 hover:bg-white hover:text-ink-500'
                 }`}>
                 {p}
               </button>
@@ -272,30 +282,35 @@ export default function SubjectPage() {
           </div>
 
           {activeTab === 'Joseo' && (
-            <div className="p-4 mb-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-3">
-              <Zap className="w-5 h-5 text-amber-500 flex-shrink-0" />
+            <div className="flex items-start gap-3.5 p-4 mb-5 rounded-xl bg-gold-50 border border-gold-100">
+              <Zap className="w-4 h-4 text-gold-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-800">Sección de Joseos ⚡</p>
-                <p className="text-xs text-amber-700 mt-0.5">Oportunidades, becas, contactos, pasantías, tutorías y todo lo útil que quieras compartir.</p>
+                <p className="text-[13px] font-semibold text-gold-700">Joseos</p>
+                <p className="text-xs text-gold-700/70 mt-1 leading-relaxed">
+                  Oportunidades, becas, contactos, pasantías y tutorías que valga la pena compartir.
+                </p>
               </div>
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="flex-1">
-              <SearchBar value={search} onChange={setSearch} placeholder="Buscar en esta materia..." />
+              <SearchBar value={search} onChange={setSearch} placeholder="Buscar en esta materia…" />
             </div>
             <FilterBar filters={filters} onChange={setFilters} />
           </div>
 
           {displayed.length === 0 ? (
-            <EmptyState variant="resources" title={search ? 'Sin resultados' : 'Sin recursos todavía'}
-              description={search ? `No encontramos nada para "${search}".` : 'Sé el primero en subir un archivo, agregar un link o publicar un joseo.'} />
+            <EmptyState variant="resources"
+              title={search ? 'Sin resultados' : 'Sin recursos todavía'}
+              description={search
+                ? `Nada coincide con "${search}". Prueba con otra palabra.`
+                : 'Sube el primer archivo, agrega un link o publica un joseo.'} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {displayed.map(r => (
                 <ResourceCard key={r.id} resource={r} onDelete={setDeleteTarget}
-                  onUpdate={updated => setResources(prev => prev.map(r => r.id === updated.id ? updated : r))} />
+                  onUpdate={updated => setResources(prev => prev.map(x => x.id === updated.id ? updated : x))} />
               ))}
             </div>
           )}
@@ -304,29 +319,32 @@ export default function SubjectPage() {
 
       {mainTab === 'Listas' && (
         <>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-500">{answerLists.length} lista{answerLists.length !== 1 ? 's' : ''} de respuestas</p>
+          <div className="flex items-center justify-between mb-5">
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-300">
+              {answerLists.length} lista{answerLists.length !== 1 ? 's' : ''} de respuestas
+            </p>
             <button onClick={() => setShowNewList(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-xl transition-colors">
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-ink-800 hover:bg-ink-900 text-white text-xs font-semibold rounded-lg transition-colors">
               <Plus className="w-3.5 h-3.5" /> Nueva lista
             </button>
           </div>
 
           {showNewList && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 shadow-sm">
+            <div className="bg-white rounded-xl border border-paper-rule shadow-card p-4 mb-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">Nueva lista de respuestas</h3>
-                <button onClick={() => setShowNewList(false)} className="p-1 hover:bg-gray-100 rounded text-gray-400">
+                <p className="text-sm font-semibold text-ink-900">Nueva lista de respuestas</p>
+                <button onClick={() => setShowNewList(false)} aria-label="Cerrar"
+                  className="p-1 hover:bg-paper rounded-md text-ink-300 hover:text-ink-600">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <form onSubmit={handleCreateList} className="flex gap-2">
                 <input type="text" value={newListTitle} onChange={e => setNewListTitle(e.target.value)}
-                  placeholder="Ej. Parcial 1 - Cirugía" autoFocus
-                  className="flex-1 px-3.5 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                  placeholder="Ej. Parcial 1 · Cirugía" autoFocus
+                  className="flex-1 px-3.5 py-2.5 text-sm border border-paper-rule rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100" />
                 <button type="submit" disabled={creatingList || !newListTitle.trim()}
-                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white text-sm font-medium rounded-xl transition-colors">
-                  {creatingList ? 'Creando...' : 'Crear'}
+                  className="px-4 py-2.5 bg-ink-800 hover:bg-ink-900 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors">
+                  {creatingList ? 'Creando…' : 'Crear'}
                 </button>
               </form>
             </div>
@@ -340,7 +358,7 @@ export default function SubjectPage() {
               {answerLists.map(l => (
                 <AnswerListCard key={l.id} list={l}
                   onDelete={setDeleteList}
-                  onUpdate={updated => setAnswerLists(prev => prev.map(l => l.id === updated.id ? updated : l))} />
+                  onUpdate={updated => setAnswerLists(prev => prev.map(x => x.id === updated.id ? updated : x))} />
               ))}
             </div>
           )}
