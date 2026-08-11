@@ -1,46 +1,56 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Clock, User, ChevronRight, X, Upload } from 'lucide-react'
+import { LayoutDashboard, Clock, User, X, Upload } from 'lucide-react'
 import { SEMESTERS } from '../constants/semesters'
 import { clsx } from '../utils/clsx'
 
-const semesterColors = {
-  '12': 'bg-blue-500',
-  '13': 'bg-indigo-500',
-  '14': 'bg-violet-500',
-  '15': 'bg-sky-500',
-  '16': 'bg-cyan-500',
+const semesterAccent = {
+  '12': 'bg-gold-500',
+  '13': 'bg-[#6E7E9B]',
+  '14': 'bg-[#8A7CA8]',
+  '15': 'bg-[#5F8A8B]',
+  '16': 'bg-[#9B7B6B]',
 }
 
 export default function Sidebar({ open, onClose }) {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={onClose} />
+        <div className="fixed inset-0 z-30 bg-ink-950/50 lg:hidden" onClick={onClose} />
       )}
 
       <aside className={clsx(
-        'fixed top-0 left-0 bottom-0 z-40 w-56 flex flex-col transition-transform duration-200',
-        'bg-[#0f1729] text-white',
+        'fixed top-0 left-0 bottom-0 z-40 w-60 flex flex-col transition-transform duration-200',
+        'bg-ink-900 text-white',
         open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-<img src="/logo.png" alt="Logo" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />          <div>
-            <p className="text-sm font-bold text-white leading-tight">DERECHO MÉDICO</p>
-            <p className="text-[10px] text-white/40 leading-tight">Repositorio del Semestre</p>
+        {/* Sello */}
+        <div className="flex items-center gap-3 px-5 py-6">
+          <div className="relative flex-shrink-0">
+            <img src="/logo.png" alt="" className="w-12 h-12 rounded-full object-cover" />
+            <span className="absolute inset-0 rounded-full ring-1 ring-gold-500/40" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-display text-[15px] font-semibold leading-tight tracking-tight text-white">
+              Derecho Médico
+            </p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-gold-400/70 leading-tight mt-0.5">
+              Repositorio
+            </p>
           </div>
           <button onClick={onClose} className="ml-auto lg:hidden text-white/40 hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+        <div className="mx-5 h-px bg-gradient-to-r from-gold-500/50 to-transparent" />
+
+        <nav className="flex-1 overflow-y-auto scrollbar-hide py-5 px-3 space-y-0.5">
           <SideLink to="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" />
 
-          <div className="pt-4 pb-1.5 px-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30">Semestres</p>
-          </div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25 px-3 pt-6 pb-2">
+            Semestres
+          </p>
 
           {SEMESTERS.map(s => (
             <NavLink
@@ -48,30 +58,40 @@ export default function Sidebar({ open, onClose }) {
               to={`/semester/${s.id}`}
               onClick={onClose}
               className={({ isActive }) => clsx(
-                'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors',
-                isActive ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                'group relative flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-lg text-sm transition-colors',
+                isActive ? 'bg-white/[0.07] text-white' : 'text-white/55 hover:bg-white/[0.04] hover:text-white/90'
               )}
             >
-              <span className={clsx('w-2 h-2 rounded-full flex-shrink-0', semesterColors[s.id])} />
-              <span className="flex-1">{s.label}</span>
-              <ChevronRight className="w-3 h-3 opacity-30" />
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-gold-500" />
+                  )}
+                  <span className={clsx('w-1.5 h-1.5 rounded-full flex-shrink-0', semesterAccent[s.id])} />
+                  <span className="flex-1 font-medium">{s.label}</span>
+                  <span className="font-mono text-[10px] text-white/25 group-hover:text-white/40">
+                    {s.id}
+                  </span>
+                </>
+              )}
             </NavLink>
           ))}
 
-          <div className="pt-4 pb-1.5 px-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30">General</p>
-          </div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25 px-3 pt-6 pb-2">
+            General
+          </p>
           <SideLink to="/recents" icon={<Clock className="w-4 h-4" />} label="Recientes" />
-          <SideLink to="/profile" icon={<User className="w-4 h-4" />} label="Mi Perfil" />
+          <SideLink to="/profile" icon={<User className="w-4 h-4" />} label="Mi perfil" />
         </nav>
 
-        {/* Upload button */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4">
           <NavLink to="/upload"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors">
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-ink-900 text-sm font-semibold transition-colors">
             <Upload className="w-4 h-4" /> Subir archivo
           </NavLink>
-          <p className="text-[10px] text-white/20 text-center mt-3">Derecho Médico © 2025</p>
+          <p className="font-mono text-[9px] text-white/20 text-center mt-4 tracking-wider">
+            DERECHO LINGUAL · MMXXV
+          </p>
         </div>
       </aside>
     </>
@@ -81,11 +101,16 @@ export default function Sidebar({ open, onClose }) {
 function SideLink({ to, icon, label }) {
   return (
     <NavLink to={to} className={({ isActive }) => clsx(
-      'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors',
-      isActive ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+      'relative flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-lg text-sm font-medium transition-colors',
+      isActive ? 'bg-white/[0.07] text-white' : 'text-white/55 hover:bg-white/[0.04] hover:text-white/90'
     )}>
-      {icon}
-      <span>{label}</span>
+      {({ isActive }) => (
+        <>
+          {isActive && <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-gold-500" />}
+          {icon}
+          <span>{label}</span>
+        </>
+      )}
     </NavLink>
   )
 }
