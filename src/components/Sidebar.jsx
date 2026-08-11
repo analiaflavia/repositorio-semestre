@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Clock, User, X, Upload } from 'lucide-react'
+import { LayoutDashboard, Clock, User, X, Upload, Link2, Zap } from 'lucide-react'
 import { SEMESTERS } from '../constants/semesters'
 import { clsx } from '../utils/clsx'
 
@@ -84,11 +84,28 @@ export default function Sidebar({ open, onClose }) {
           <SideLink to="/profile" icon={<User className="w-4 h-4" />} label="Mi perfil" />
         </nav>
 
-        <div className="p-4">
-          <NavLink to="/upload"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-ink-900 text-sm font-semibold transition-colors">
-            <Upload className="w-4 h-4" /> Subir archivo
+        {/* Agregar */}
+        <div className="px-3 pb-4 pt-2">
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25 px-3 pb-2.5">
+            Agregar
+          </p>
+
+          <NavLink to="/upload" onClick={onClose}
+            className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-ink-900 text-sm font-semibold transition-colors">
+            <Upload className="w-4 h-4 flex-shrink-0" /> Subir archivo
           </NavLink>
+
+          <div className="flex gap-2 mt-2">
+            <NavLink to="/add-link" onClick={onClose}
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white text-xs font-medium transition-colors">
+              <Link2 className="w-3.5 h-3.5 flex-shrink-0" /> Link
+            </NavLink>
+            <NavLink to="/add-joseo" onClick={onClose}
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-gold-400/80 hover:text-gold-400 text-xs font-medium transition-colors">
+              <Zap className="w-3.5 h-3.5 flex-shrink-0" /> Joseo
+            </NavLink>
+          </div>
+
           <p className="font-mono text-[9px] text-white/20 text-center mt-4 tracking-wider">
             DERECHO LINGUAL · MMXXV
           </p>
