@@ -272,7 +272,18 @@ export default function Dashboard() {
       const results = await Promise.all(
         SEMESTERS.map(async s => {
           const [subjects, stats] = await Promise.all([getSubjects(s.id), getSemesterStats(s.id)])
-          return { id: s.id, subjects, subjectCount: subjects.length, stats }
+          const withMaterial = await Promise.all(
+            subjects.map(async sub => {
+              const { count } = await supabase
+                .from('resources')
+                .select('id', { count: 'exact', head: true })
+                .eq('subject_id', sub.id)
+              return (count || 0) > 0
+            })
+          )
+          const filled = withMaterial.filter(Boolean).length
+          const coverage = subjects.length ? Math.round((filled / subjects.length) * 100) : 0
+          return { id: s.id, subjects, subjectCount: subjects.length, stats, coverage }
         })
       )
       const map = {}; const subMap = {}
@@ -379,7 +390,8 @@ export default function Dashboard() {
                     <div key={s.id} className={colClass}>
                       <SemesterCard semester={s}
                         subjectCount={semesterData[s.id]?.subjectCount || 0}
-                        stats={semesterData[s.id]?.stats || {}} />
+                        stats={semesterData[s.id]?.stats || {}}
+                        coverage={semesterData[s.id]?.coverage || 0} />
                     </div>
                   )
                 })}
