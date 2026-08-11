@@ -2,7 +2,6 @@ import { useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import Breadcrumbs from '../components/Breadcrumbs'
 import FileUploadForm from '../components/FileUploadForm'
-import { Upload } from 'lucide-react'
 
 export default function UploadFile() {
   const [params] = useSearchParams()
@@ -13,16 +12,20 @@ export default function UploadFile() {
   return (
     <Layout>
       <Breadcrumbs items={[{ label: 'Subir archivo' }]} />
+
       <div className="max-w-2xl">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-            <Upload className="w-5 h-5 text-brand-600" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Subir archivo</h1>
-            <p className="text-sm text-gray-400">PDF, Word, PPT, Excel, imágenes, videos — máx. 200 MB</p>
-          </div>
+        <div className="mt-4 mb-8 pb-6 border-b border-paper-rule">
+          <p className="eyebrow mb-2">Nuevo recurso</p>
+          <h1 className="font-display text-[32px] leading-none font-semibold tracking-tight text-ink-900">
+            Subir archivo
+          </h1>
+          {subjectName && (
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-300 mt-3">
+              {subjectName}
+            </p>
+          )}
         </div>
+
         <FileUploadForm
           defaultSemester={semester}
           defaultSubjectId={subjectId}
