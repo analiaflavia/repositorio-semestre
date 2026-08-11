@@ -97,3 +97,17 @@ export async function updateResource(id, payload) {
   if (error) throw error
   return data
 }
+// ── Marcar o quitar el sello de verificado
+export async function toggleVerified(id, verified, verifiedByName) {
+  const { data, error } = await supabase
+    .from('resources')
+    .update({
+      verified,
+      verified_by_name: verified ? verifiedByName : null,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}

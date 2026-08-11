@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Download, ExternalLink, Trash2, Zap, Calendar, User, Pencil, X, Check, MessageCircle, ChevronDown } from 'lucide-react'
+import { Download, ExternalLink, Trash2, Zap, Calendar, User, Pencil, X, Check, MessageCircle, ChevronDown, BadgeCheck } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { getResourceType } from '../constants/resourceTypes'
 import { downloadFile } from '../services/storageService'
-import { updateResource } from '../services/resourceService'
+import { updateResource, toggleVerified } from '../services/resourceService'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 import ResourceComments from './ResourceComments'
@@ -25,7 +25,7 @@ const TYPE_DOT = {
 }
 
 export default function ResourceCard({ resource, onDelete, onUpdate }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const isOwner = user?.id === resource.uploaded_by
   const rType   = getResourceType(resource.type)
   const isJoseo = resource.type === 'Joseo'
@@ -33,6 +33,7 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
 
   const [editing,     setEditing]     = useState(false)
   const [showThread,  setShowThread]  = useState(false)
+  const [verifying,   setVerifying]   = useState(false)
   const [title,       setTitle]       = useState(resource.title)
   const [description, setDescription] = useState(resource.description || '')
   const [type,        setType]        = useState(resource.type)
@@ -62,6 +63,24 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
     }
   }
 
+  async function handleVerify() {
+    setVerifying(true)
+    try {
+      const next = !resource.verified
+      const updated = await toggleVerified(
+        resource.id,
+        next,
+        profile?.full_name || user?.email
+      )
+      toast.success(next ? 'Marcado como verificado' : 'Sello retirado')
+      if (onUpdate) onUpdate(updated)
+    } catch (err) {
+      toast.error('No se pudo cambiar el sello: ' + (err.message || ''))
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   function handleCancel() {
     setTitle(resource.title)
     setDescription(resource.description || '')
@@ -72,7 +91,7 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
 
   return (
     <div className={`group relative flex flex-col bg-white rounded-xl border shadow-card hover:shadow-lift transition-all duration-200 overflow-hidden ${
-      isJoseo ? 'border-gold-300' : 'border-paper-rule'
+      resource.verified ? 'border-gold-300' : isJoseo ? 'border-gold-300' : 'border-paper-rule'
     }`}>
       {isJoseo && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-gold-500" />}
 
@@ -106,7 +125,7 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
           </div>
         ) : (
           <>
-            {/* Metadatos superiores */}
+            {/* Metadatos */}
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="inline-flex items-center gap-1.5">
@@ -144,6 +163,21 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
                 )}
               </div>
             </div>
+
+            {/* Sello de verificado */}
+            {resource.verified && (
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <BadgeCheck className="w-3.5 h-3.5 text-gold-600 flex-shrink-0" />
+                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-gold-700">
+                  Salió en el examen
+                </span>
+                {resource.verified_by_name && (
+                  <span className="font-mono text-[9px] text-ink-300">
+                    · {resource.verified_by_name.split(' ')[0]}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Título */}
             <h3 className="font-semibold text-ink-900 text-[15px] leading-snug line-clamp-2">
@@ -184,21 +218,35 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
                 </a>
               )}
 
-              <button
-                onClick={() => setShowThread(v => !v)}
-                aria-expanded={showThread}
-                className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-paper text-xs font-medium transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Comentarios</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${showThread ? 'rotate-180' : ''}`} />
-              </button>
+              <div className="ml-auto flex items-center gap-0.5">
+                <button
+                  onClick={handleVerify}
+                  disabled={verifying}
+                  title={resource.verified ? 'Quitar el sello' : 'Marcar: esto salió en el examen'}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    resource.verified
+                      ? 'text-gold-600 hover:bg-gold-50'
+                      : 'text-ink-300 hover:text-gold-600 hover:bg-gold-50'
+                  }`}
+                >
+                  <BadgeCheck className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setShowThread(v => !v)}
+                  aria-expanded={showThread}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-paper text-xs font-medium transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Comentarios</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showThread ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
             </div>
           </>
         )}
       </div>
 
-      {/* Hilo de comentarios y reacciones */}
       {!editing && showThread && (
         <div className="border-t border-paper-rule bg-paper-soft px-5 py-4">
           <ResourceComments resourceId={resource.id} />
