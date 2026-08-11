@@ -13,10 +13,11 @@ import RequestBoard from '../components/RequestBoard'
 import { getSubject } from '../services/subjectService'
 import { getResources, deleteResource } from '../services/resourceService'
 import { getAnswerLists, createAnswerList, deleteAnswerList } from '../services/answerListService'
+import { getRecentViews } from '../services/viewService'
 import { deleteFile } from '../services/storageService'
 import { SUBJECT_TABS } from '../constants/resourceTypes'
 import { getSemester } from '../constants/semesters'
-import { Upload, Link2, Zap, List, Plus, X, BookOpen, ArrowUpRight } from 'lucide-react'
+import { Upload, Link2, Zap, Plus, X, BookOpen, ArrowUpRight } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
@@ -52,6 +53,7 @@ export default function SubjectPage() {
   const [subject,       setSubject]       = useState(null)
   const [resources,     setResources]     = useState([])
   const [answerLists,   setAnswerLists]   = useState([])
+  const [views,         setViews]         = useState({})
   const [loading,       setLoading]       = useState(true)
   const [mainTab,       setMainTab]       = useState('Recursos')
   const [activeTab,     setActiveTab]     = useState('all')
@@ -79,6 +81,7 @@ export default function SubjectPage() {
       setSubject(sub)
       setResources(res)
       setAnswerLists(lists)
+      getRecentViews(res.map(r => r.id)).then(setViews).catch(() => {})
     } catch {
       toast.error('No se pudieron cargar los recursos')
     } finally {
@@ -228,11 +231,13 @@ export default function SubjectPage() {
           </div>
         </section>
       )}
-<RequestBoard
+
+      <RequestBoard
         semester={semester}
         subjectId={subjectId}
         subjectName={subject?.name}
       />
+
       {/* Tabs principales */}
       <div className="flex gap-6 mb-6 border-b border-paper-rule">
         {MAIN_TABS.map(tab => (
@@ -314,7 +319,7 @@ export default function SubjectPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {displayed.map(r => (
-                <ResourceCard key={r.id} resource={r} onDelete={setDeleteTarget}
+                <ResourceCard key={r.id} resource={r} views={views[r.id]} onDelete={setDeleteTarget}
                   onUpdate={updated => setResources(prev => prev.map(x => x.id === updated.id ? updated : x))} />
               ))}
             </div>

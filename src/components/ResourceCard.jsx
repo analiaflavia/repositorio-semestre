@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Download, ExternalLink, Trash2, Zap, Calendar, User, Pencil, X, Check, MessageCircle, ChevronDown, BadgeCheck } from 'lucide-react'
+import { Download, ExternalLink, Trash2, Zap, Calendar, User, Pencil, X, Check, MessageCircle, ChevronDown, BadgeCheck, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { getResourceType } from '../constants/resourceTypes'
 import { downloadFile } from '../services/storageService'
 import { updateResource, toggleVerified } from '../services/resourceService'
+import { logView } from '../services/viewService'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 import ResourceComments from './ResourceComments'
@@ -24,7 +25,15 @@ const TYPE_DOT = {
   'Otro':               '#8B97AE',
 }
 
-export default function ResourceCard({ resource, onDelete, onUpdate }) {
+function viewLabel(views, currentUserId) {
+  if (!views || !views.count) return null
+  const { count, names } = views
+  if (count === 1) return `${names[0]?.split(' ')[0] || 'Alguien'} lo abrió esta semana`
+  if (count === 2) return `${names[0]?.split(' ')[0]} y ${names[1]?.split(' ')[0]} lo abrieron esta semana`
+  return `${count} personas lo abrieron esta semana`
+}
+
+export default function ResourceCard({ resource, views, onDelete, onUpdate }) {
   const { user, profile } = useAuth()
   const isOwner = user?.id === resource.uploaded_by
   const rType   = getResourceType(resource.type)
@@ -40,7 +49,16 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
   const [parcial,     setParcial]     = useState(resource.parcial || 'General')
   const [saving,      setSaving]      = useState(false)
 
+  function track() {
+    logView({
+      resourceId: resource.id,
+      userId: user?.id,
+      userName: profile?.full_name || user?.email,
+    }).catch(() => {})
+  }
+
   async function handleDownload() {
+    track()
     try {
       await downloadFile(resource.file_path, resource.title)
     } catch {
@@ -67,11 +85,7 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
     setVerifying(true)
     try {
       const next = !resource.verified
-      const updated = await toggleVerified(
-        resource.id,
-        next,
-        profile?.full_name || user?.email
-      )
+      const updated = await toggleVerified(resource.id, next, profile?.full_name || user?.email)
       toast.success(next ? 'Marcado como verificado' : 'Sello retirado')
       if (onUpdate) onUpdate(updated)
     } catch (err) {
@@ -89,9 +103,11 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
     setEditing(false)
   }
 
+  const trail = viewLabel(views, user?.id)
+
   return (
     <div className={`group relative flex flex-col bg-white rounded-xl border shadow-card hover:shadow-lift transition-all duration-200 overflow-hidden ${
-      resource.verified ? 'border-gold-300' : isJoseo ? 'border-gold-300' : 'border-paper-rule'
+      resource.verified || isJoseo ? 'border-gold-300' : 'border-paper-rule'
     }`}>
       {isJoseo && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-gold-500" />}
 
@@ -125,7 +141,6 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
           </div>
         ) : (
           <>
-            {/* Metadatos */}
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="inline-flex items-center gap-1.5">
@@ -164,7 +179,6 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
               </div>
             </div>
 
-            {/* Sello de verificado */}
             {resource.verified && (
               <div className="flex items-center gap-1.5 mb-2.5">
                 <BadgeCheck className="w-3.5 h-3.5 text-gold-600 flex-shrink-0" />
@@ -179,7 +193,6 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
               </div>
             )}
 
-            {/* Título */}
             <h3 className="font-semibold text-ink-900 text-[15px] leading-snug line-clamp-2">
               {isJoseo && <Zap className="inline w-3.5 h-3.5 text-gold-500 mr-1 -mt-0.5" />}
               {resource.title}
@@ -191,7 +204,6 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
               </p>
             )}
 
-            {/* Firma */}
             <div className="flex items-center gap-3 font-mono text-[10px] text-ink-300 mt-3">
               <span className="flex items-center gap-1">
                 <User className="w-3 h-3" />
@@ -203,7 +215,14 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
               </span>
             </div>
 
-            {/* Acciones */}
+            {/* Rastro de estudio */}
+            {trail && (
+              <div className="flex items-center gap-1.5 mt-2.5 text-ink-400">
+                <Eye className="w-3 h-3 flex-shrink-0" />
+                <span className="text-[11px]">{trail}</span>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 mt-4">
               {resource.resource_kind === 'file' && resource.file_path && (
                 <button onClick={handleDownload}
@@ -212,31 +231,23 @@ export default function ResourceCard({ resource, onDelete, onUpdate }) {
                 </button>
               )}
               {resource.link_url && (
-                <a href={resource.link_url} target="_blank" rel="noopener noreferrer"
+                <a href={resource.link_url} target="_blank" rel="noopener noreferrer" onClick={track}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-paper-rule hover:border-ink-300 hover:bg-paper text-ink-700 text-xs font-semibold transition-colors">
                   <ExternalLink className="w-3.5 h-3.5" /> Abrir link
                 </a>
               )}
 
               <div className="ml-auto flex items-center gap-0.5">
-                <button
-                  onClick={handleVerify}
-                  disabled={verifying}
+                <button onClick={handleVerify} disabled={verifying}
                   title={resource.verified ? 'Quitar el sello' : 'Marcar: esto salió en el examen'}
                   className={`p-1.5 rounded-md transition-colors ${
-                    resource.verified
-                      ? 'text-gold-600 hover:bg-gold-50'
-                      : 'text-ink-300 hover:text-gold-600 hover:bg-gold-50'
-                  }`}
-                >
+                    resource.verified ? 'text-gold-600 hover:bg-gold-50' : 'text-ink-300 hover:text-gold-600 hover:bg-gold-50'
+                  }`}>
                   <BadgeCheck className="w-4 h-4" />
                 </button>
 
-                <button
-                  onClick={() => setShowThread(v => !v)}
-                  aria-expanded={showThread}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-paper text-xs font-medium transition-colors"
-                >
+                <button onClick={() => setShowThread(v => !v)} aria-expanded={showThread}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-paper text-xs font-medium transition-colors">
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Comentarios</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${showThread ? 'rotate-180' : ''}`} />
