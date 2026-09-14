@@ -2,30 +2,31 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './hooks/useAuth'
 import ProtectedRoute from './components/ProtectedRoute'
 
-import Login       from './pages/Login'
-import Register    from './pages/Register'
-import Dashboard   from './pages/Dashboard'
+import Login        from './pages/Login'
+import Register     from './pages/Register'
+import Dashboard    from './pages/Dashboard'
 import SemesterPage from './pages/SemesterPage'
 import SubjectPage  from './pages/SubjectPage'
-import UploadFile  from './pages/UploadFile'
-import AddLink     from './pages/AddLink'
-import AddJoseo    from './pages/AddJoseo'
-import Recents     from './pages/Recents'
-import Profile     from './pages/Profile'
-import NotFound    from './pages/NotFound'
-import BancoPage   from './pages/BancoPage'
+import UploadFile   from './pages/UploadFile'
+import AddLink      from './pages/AddLink'
+import AddJoseo     from './pages/AddJoseo'
+import Recents      from './pages/Recents'
+import Profile      from './pages/Profile'
+import Admin        from './pages/Admin'
+import NotFound     from './pages/NotFound'
+import BancoPage    from './pages/BancoPage'
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
+          {/* Público */}
           <Route path="/"         element={<Navigate to="/dashboard" replace />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected */}
+          {/* Protegido */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
           <Route path="/semester/:semester"
@@ -39,6 +40,7 @@ export default function App() {
 
           <Route path="/recents" element={<ProtectedRoute><Recents /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin"   element={<ProtectedRoute><Admin /></ProtectedRoute>} />
 
           <Route path="/bancos/:bancoId" element={<ProtectedRoute><BancoPage /></ProtectedRoute>} />
 

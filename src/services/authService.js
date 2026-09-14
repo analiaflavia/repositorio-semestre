@@ -49,3 +49,52 @@ export async function updateProfile(userId, updates) {
   if (error) throw error
   return data
 }
+
+// ── Aprobación de cuentas ──────────────────────────────
+
+export async function getPendingUsers() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('approved', false)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function getApprovedUsers() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('approved', true)
+    .order('full_name', { ascending: true })
+  if (error) throw error
+  return data
+}
+
+export async function approveUser(id) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ approved: true, approved_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function revokeUser(id) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ approved: false, approved_at: null })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function rejectUser(id) {
+  const { error } = await supabase.from('profiles').delete().eq('id', id)
+  if (error) throw error
+}
