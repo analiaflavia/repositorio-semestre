@@ -34,6 +34,23 @@ const BANCOS_POR_MATERIA = {
     { id: 'cirugia',        title: 'Banco de Cirugía',        file: 'banco-cirugia-bloque-qx.html' },
     { id: 'imagenes',       title: 'Banco de Imágenes',       file: 'banco-imagenes-bloque-qx.html' },
   ],
+  'PEDIATRIA': [
+    { id: 'pediatria-p1', title: 'Banco de Pediatría · Parte 1', file: 'banco-pediatria-p1.html' },
+  ],
+}
+
+// Quita acentos para que "PEDIATRÍA" y "PEDIATRIA" den lo mismo
+function sinAcentos(s) {
+  return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+function getBancosForSubject(name) {
+  if (!name) return []
+  const limpio = sinAcentos(name)
+  for (const [key, bancos] of Object.entries(BANCOS_POR_MATERIA)) {
+    if (limpio.includes(sinAcentos(key))) return bancos
+  }
+  return []
 }
 
 function getBancosForSubject(name) {
