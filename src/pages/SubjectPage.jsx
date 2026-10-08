@@ -53,15 +53,6 @@ function getBancosForSubject(name) {
   return []
 }
 
-function getBancosForSubject(name) {
-  if (!name) return []
-  const upper = name.toUpperCase()
-  for (const [key, bancos] of Object.entries(BANCOS_POR_MATERIA)) {
-    if (upper.includes(key)) return bancos
-  }
-  return []
-}
-
 export default function SubjectPage() {
   const { semester, subjectId } = useParams()
   const { user, profile } = useAuth()

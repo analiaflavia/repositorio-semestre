@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banco de Pediatría · Parte 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F8FF; --paper:#FFFFFF; --ink:#33335A; --muted:#6B6B8E; --line:#E3E6F3;
+  --sky:#D3EAF8; --sky-s:#4F9CC9;
+  --mint:#D2F1E3; --mint-s:#3FA57C;
+  --peach:#FFE3D6; --peach-s:#E07B5B;
+  --lav:#E6DEFB; --lav-s:#8A6FD6;
+  --butter:#FFF3C4; --butter-s:#C79A16;
+  --rose:#FBD9E1; --rose-s:#CF5876;
+  --shadow:0 2px 0 rgba(51,51,90,.06);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1E1E33; --paper:#28284A; --ink:#ECEBFA; --muted:#AFAED0; --line:#3A3A62;
+    --sky:#2B4560; --sky-s:#8CC8EE; --mint:#244A3E; --mint-s:#7FD9B1;
+    --peach:#53382F; --peach-s:#FFAD92; --lav:#3B3363; --lav-s:#BFAEFF;
+    --butter:#4B4325; --butter-s:#F2D06A; --rose:#55303D; --rose-s:#FF9AB4;
+    --shadow:0 2px 0 rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1E1E33; --paper:#28284A; --ink:#ECEBFA; --muted:#AFAED0; --line:#3A3A62;
+  --sky:#2B4560; --sky-s:#8CC8EE; --mint:#244A3E; --mint-s:#7FD9B1;
+  --peach:#53382F; --peach-s:#FFAD92; --lav:#3B3363; --lav-s:#BFAEFF;
+  --butter:#4B4325; --butter-s:#F2D06A; --rose:#55303D; --rose-s:#FF9AB4;
+  --shadow:0 2px 0 rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Fredoka","Nunito",system-ui,sans-serif;font-weight:600;line-height:1.2;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--lav-s);outline-offset:2px}
+.wrap{max-width:820px;margin:0 auto;padding:20px 18px 60px}
+.hidden{display:none!important}
+
+/* ---------- Home ---------- */
+.hero{position:relative;padding:28px 24px 26px;border-radius:28px;background:var(--sky);overflow:hidden;margin-bottom:22px}
+.hero h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.5px;max-width:15ch}
+.hero p{margin:10px 0 0;color:var(--muted);max-width:46ch}
+.hero .blocks{position:absolute;right:18px;bottom:14px;display:flex;gap:6px;align-items:flex-end}
+.blk{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:"Fredoka",sans-serif;font-size:20px;color:var(--ink);box-shadow:var(--shadow)}
+.blk.a{background:var(--peach);transform:rotate(-6deg)}
+.blk.b{background:var(--mint);height:46px;width:46px;font-size:26px}
+.blk.c{background:var(--butter);transform:rotate(7deg)}
+@media (max-width:560px){.hero .blocks{position:static;margin-top:16px}}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.stat{background:var(--paper);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px}
+.stat b{display:block;font-family:"Fredoka",sans-serif;font-size:26px;font-weight:600}
+.stat span{font-size:14px;color:var(--muted)}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+.panel{background:var(--paper);border:1.5px solid var(--line);border-radius:22px;padding:20px;margin-bottom:16px}
+.panel h2{font-size:21px;margin-bottom:4px}
+.panel .hint{color:var(--muted);font-size:15px;margin:0 0 14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.chip{display:flex;gap:10px;align-items:flex-start;text-align:left;border:2px solid transparent;border-radius:16px;padding:10px 12px;background:var(--bg);transition:transform .12s}
+.chip .dot{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-size:14px;margin-top:2px;background:var(--paper)}
+.chip strong{display:block;font-size:15px}
+.chip small{display:block;color:var(--muted);font-size:13.5px;line-height:1.35}
+.chip.on{border-color:var(--ink)}
+.chip.on .dot{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip:active{transform:scale(.98)}
+.linkbtn{background:none;border:none;color:var(--sky-s);font-weight:700;padding:4px 2px;font-size:15px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:2px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px}
+.seg button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg button small{font-weight:600;opacity:.7;margin-left:4px}
+.count{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.count input[type=range]{flex:1;min-width:180px;accent-color:var(--peach-s);height:28px}
+.count output{font-family:"Fredoka",sans-serif;font-size:30px;min-width:3ch;text-align:right}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.quick button{border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:4px 10px;font-size:14px;font-weight:700}
+.toggle{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:15px;color:var(--muted)}
+.toggle input{width:18px;height:18px;accent-color:var(--ink)}
+.cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px}
+.btn{border:none;border-radius:16px;padding:14px 22px;font-weight:800;font-size:17px;background:var(--ink);color:var(--paper);box-shadow:var(--shadow)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.soft{background:var(--paper);color:var(--ink);border:2px solid var(--line)}
+.empty{color:var(--rose-s);font-weight:700;font-size:15px}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px;color:var(--muted);font-size:14px}
+
+/* ---------- Quiz ---------- */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;margin:-20px 0 14px}
+.tb-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tb-row .left{display:flex;gap:8px;align-items:center}
+.iconbtn{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:6px 12px;font-weight:700;font-size:14px}
+.counter{font-weight:800;font-size:15px}
+.counter span{color:var(--muted);font-weight:600}
+.ruler{position:relative;margin-top:12px;height:26px;border-radius:13px;background:var(--paper);border:2px solid var(--line);overflow:hidden}
+.ruler .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--mint),var(--sky),var(--lav),var(--peach));transition:width .35s ease}
+.ruler .ticks{position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--line) calc(10% - 2px) 10%);opacity:.9}
+.ruler .bear{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);font-size:18px;transition:left .35s ease;filter:drop-shadow(0 1px 0 rgba(0,0,0,.15))}
+.livescore{margin-top:6px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between}
+
+.qcard{background:var(--paper);border:1.5px solid var(--line);border-radius:24px;padding:22px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tag{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px}
+.qtext{font-size:19px;font-weight:700;line-height:1.45;margin:0 0 18px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:var(--bg);border-radius:16px;padding:12px 14px;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--lav-s)}
+.opt:disabled{cursor:default}
+.opt .let{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--paper);border:2px solid var(--line);font-family:"Fredoka",sans-serif;font-size:16px}
+.opt .body{flex:1}
+.opt .txt{font-weight:600}
+.opt .why{display:none;margin-top:8px;font-size:15px;color:var(--ink);line-height:1.5}
+.opt .why em{font-style:normal;font-weight:800}
+.answered .opt .why{display:block}
+.opt.right{border-color:var(--mint-s);background:var(--mint)}
+.opt.right .let{background:var(--mint-s);border-color:var(--mint-s);color:#fff}
+.opt.wrong{border-color:var(--rose-s);background:var(--rose)}
+.opt.wrong .let{background:var(--rose-s);border-color:var(--rose-s);color:#fff}
+.answered .opt:not(.right):not(.wrong){opacity:.92}
+.general{display:none;margin-top:16px;background:var(--butter);border-radius:18px;padding:14px 16px}
+.general h3{font-size:16px;margin-bottom:4px}
+.general p{margin:0;font-size:15.5px}
+.answered .general{display:block}
+.verdict{display:none;margin:14px 0 0;font-family:"Fredoka",sans-serif;font-size:20px}
+.answered .verdict{display:block}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.markbtn{border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:10px 14px;font-weight:800;font-size:15px}
+.markbtn.on{background:var(--butter);border-color:var(--butter-s)}
+.keys{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* ---------- Results ---------- */
+.res-hero{display:flex;gap:22px;align-items:center;flex-wrap:wrap;background:var(--mint);border-radius:28px;padding:24px;margin-bottom:16px}
+.ring{--p:0;width:150px;height:150px;border-radius:50%;background:conic-gradient(var(--mint-s) calc(var(--p)*1%),var(--paper) 0);display:grid;place-items:center;flex:none}
+.ring div{width:116px;height:116px;border-radius:50%;background:var(--mint);display:grid;place-items:center;font-family:"Fredoka",sans-serif;font-size:36px}
+.res-hero h2{font-size:28px}
+.res-hero p{margin:6px 0 0;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar .lbl{display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin-bottom:4px;gap:10px}
+.bar .lbl span{color:var(--muted);font-weight:600;white-space:nowrap}
+.bar .track{height:12px;border-radius:6px;background:var(--bg);overflow:hidden;border:1.5px solid var(--line)}
+.bar .track i{display:block;height:100%;border-radius:6px}
+.weak{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.weak li{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--rose);border-radius:14px;padding:10px 14px;font-weight:700;font-size:15px}
+.weak li span{font-weight:600;color:var(--muted);font-size:14px;white-space:nowrap}
+.weak li small{display:block;font-weight:600;color:var(--muted);font-size:13px}
+.missed details{border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.missed summary{cursor:pointer;font-weight:700;font-size:15px}
+.missed p{margin:8px 0 0;font-size:15px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HOME -->
+<section id="home">
+  <div class="hero">
+    <h1>Banco de preguntas de Pediatría</h1>
+    <p>Parte 1 del examen: clases 1 a 11. Escoge clases, cuántas preguntas quieres y qué tipo de repaso vas a hacer.</p>
+    <div class="blocks" aria-hidden="true"><div class="blk a">A</div><div class="blk b">🧸</div><div class="blk c">C</div></div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <h2>Clases</h2>
+      <div><button class="linkbtn" id="selAll">Todas</button> · <button class="linkbtn" id="selNone">Ninguna</button></div>
+    </div>
+    <p class="hint">Toca para incluir o quitar.</p>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Qué preguntas</h2>
+    <p class="hint">Filtra según lo que ya respondiste o marcaste.</p>
+    <div class="seg" id="modes"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Cuántas</h2>
+    <p class="hint" id="availHint"></p>
+    <div class="count">
+      <input type="range" id="num" min="1" max="1" value="1" aria-label="Número de preguntas">
+      <output id="numOut">1</output>
+    </div>
+    <div class="quick" id="quick"></div>
+    <label class="toggle"><input type="checkbox" id="shuffle" checked> Orden aleatorio de preguntas</label>
+  </div>
+
+  <div class="cta">
+    <span class="empty hidden" id="emptyMsg">No hay preguntas con esos filtros. Cambia las clases o el tipo de repaso.</span>
+    <span></span>
+    <button class="btn" id="startBtn">Empezar</button>
+  </div>
+
+  <div class="foot">
+    <span>Tus marcadas y resultados se guardan en este navegador.</span>
+    <button class="linkbtn" id="resetBtn" style="color:var(--rose-s)">Borrar progreso</button>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="hidden">
+  <div class="topbar">
+    <div class="tb-row">
+      <div class="left">
+        <button class="iconbtn" id="exitBtn">Salir</button>
+        <button class="iconbtn" id="finishBtn">Terminar</button>
+      </div>
+      <div class="counter" id="counter"></div>
+    </div>
+    <div class="ruler" aria-hidden="true"><div class="fill" id="fill"></div><div class="ticks"></div><div class="bear" id="bear">🧸</div></div>
+    <div class="livescore"><span id="liveOk"></span><span id="liveBad"></span></div>
+  </div>
+
+  <div class="qcard" id="qcard">
+    <div class="tags" id="qtags"></div>
+    <p class="qtext" id="qtext"></p>
+    <div class="opts" id="opts"></div>
+    <p class="verdict" id="verdict"></p>
+    <div class="general"><h3>Explicación general</h3><p id="gen"></p></div>
+  </div>
+  <div class="qnav">
+    <button class="markbtn" id="markBtn">☆ Marcar</button>
+    <button class="btn" id="nextBtn" disabled>Siguiente</button>
+  </div>
+  <p class="keys">Atajos: 1-4 o A-D para responder, Enter para seguir, M para marcar.</p>
+</section>
+
+<!-- RESULTS -->
+<section id="results" class="hidden">
+  <div class="res-hero">
+    <div class="ring" id="ring"><div id="ringTxt">0%</div></div>
+    <div>
+      <h2 id="resTitle"></h2>
+      <p id="resSub"></p>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Temas que más fallaste</h2>
+    <p class="hint">Ordenados por número de errores en este intento.</p>
+    <ul class="weak" id="weak"></ul>
+  </div>
+  <div class="panel">
+    <h2>Por clase</h2>
+    <p class="hint">Porcentaje de aciertos en cada clase de este intento.</p>
+    <div class="bars" id="bars"></div>
+  </div>
+  <div class="panel missed" id="missedPanel">
+    <h2>Preguntas falladas</h2>
+    <p class="hint">Toca para ver la respuesta correcta.</p>
+    <div id="missed"></div>
+  </div>
+  <div class="cta">
+    <button class="btn soft" id="redoWrong">Repetir las falladas</button>
+    <button class="btn" id="homeBtn">Volver al inicio</button>
+  </div>
+</section>
+</div>
+
+<script>
+const CLASSES=[
+ {k:"c1",n:"Clase 1",d:"Introducción, determinantes, historia y mortalidad",col:"sky"},
+ {k:"c2",n:"Clase 2",d:"Historia clínica, exploración, cribados y ética",col:"mint"},
+ {k:"c3",n:"Clase 3",d:"Crecimiento, antropometría e hitos del desarrollo",col:"peach"},
+ {k:"c4",n:"Clase 4",d:"Inmunidad y vacunas",col:"lav"},
+ {k:"c58",n:"Clases 5 y 8",d:"Lactancia materna",col:"butter"},
+ {k:"c5",n:"Clase 5",d:"Alarmas del desarrollo, teratógenos y vómitos del lactante",col:"rose"},
+ {k:"c6",n:"Clase 6",d:"Desarrollo (parte 2) y parasitosis",col:"mint"},
+ {k:"c8",n:"Clase 8",d:"Síndromes febriles",col:"peach"},
+ {k:"c9",n:"Clase 9",d:"Fórmulas, alimentación complementaria, micronutrientes e IRA altas",col:"sky"},
+ {k:"c10",n:"Clase 10",d:"Diarrea, vómitos, ERGE y electrolitos",col:"lav"},
+ {k:"c11",n:"Clase 11",d:"Enfermedades exantemáticas",col:"butter"}
+];
+
+/* Cada pregunta: la PRIMERA opción es la correcta en los datos; el orden se baraja al mostrarla. */
+const RAW=[
+/* ================= CLASE 1 ================= */
+{c:"c1",t:"Clasificación por edad",q:"Una bebé de 5 semanas de vida ya no recibe pecho, solo fórmula. ¿Cómo se clasifica según la edad pediátrica?",o:[
+["Lactante","Correcta: la etapa de lactante va de los 28 días a los 2 años y se define por la edad, no por si recibe lactancia."],
+["Recién nacida","Recién nacido es solo de 0 a 28 días. Sería la respuesta si la bebé tuviera 3 semanas."],
+["Neonato en periodo perinatal","La perinatología se ocupa del periodo alrededor del nacimiento (desde la semana 28 de gestación). A las 5 semanas de vida ya salió de esa etapa."],
+["No lactante, por estar destetada","Es la trampa: 'lactante' no depende de la lactancia. Seguiría siendo lactante aunque nunca hubiera tomado pecho."]],
+e:"La pediatría abarca de la concepción a los 18 años. Recién nacido 0-28 días; lactante 28 días-2 años (por edad); luego infancia, preescolar (3-6), escolar (6-12) y adolescencia, que tiene su propia subclasificación."},
+
+{c:"c1",t:"Determinantes de la salud",q:"Un niño de 3 años es cuidado de forma alterna por la abuela, una tía y una vecina. Según los determinantes vistos en clase, ¿qué implicación práctica tiene?",o:[
+["Los datos de vacunas y alimentación son poco confiables","Correcta: el 'cuidador variable' hace que nadie tenga la historia completa; hay que verificar con carnet y documentos."],
+["Es un determinante epidemiológico de enfermedades tropicales","Lo epidemiológico se refiere al país tropical (dengue, malaria, leptospirosis todo el año), no a quién cuida al niño."],
+["Obliga a pedir autorización judicial para tratarlo","Para tratar se necesita un tutor legal presente, pero no una orden judicial por tener varios cuidadores."],
+["Se clasifica como determinante económico por falta de seguro","Lo económico incluye alimentación, seguro y acceso a vacunas; tener varios cuidadores no es en sí un problema económico."]],
+e:"Determinantes vistos: económicos, educativos, nutricionales, sociales/religiosos, epidemiológicos, ambientales, cuidador variable, violencia intrafamiliar, pantallas y obesidad ('gordito' ya no equivale a sano)."},
+
+{c:"c1",t:"Nuevas morbilidades (EAI)",q:"Según Nelson, ¿qué se ha observado en personas con 6 o más experiencias adversas en la infancia (EAI)?",o:[
+["Mortalidad unos 20 años más temprana","Correcta: con ≥6 EAI la mortalidad se adelanta ~20 años, por estrés tóxico y carga alostática."],
+["Mortalidad unos 5 años más temprana","La cifra que da el libro es ~20 años, no 5; el impacto es mucho mayor de lo que suele pensarse."],
+["Efecto solo psiquiátrico, sin daño orgánico","El estrés tóxico desregula los sistemas neuroendocrino, cardiovascular, inmunitario y metabólico; no es solo psiquiátrico."],
+["Explican menos del 10% de la salud infantil","Los problemas conductuales y psicosociales explican el 40-70% de la variación en resultados de salud infantil."]],
+e:"Nuevas morbilidades (Nelson, no visto en clase): EAI = maltrato, abandono, disfunción familiar. Carga alostática = desgaste acumulado por activación crónica de los sistemas de estrés."},
+
+{c:"c1",t:"Historia de la pediatría",q:"¿Cuál asociación histórica es correcta?",o:[
+["Hugo Mendoza: fundó la residencia de Pediatría de la UASD (1969)","Correcta: es el 'padre de la pediatría dominicana'; dirigió el hospital (1968) y fundó cátedra y residencia (1969)."],
+["Primer hospital pediátrico del mundo: fundado en Madrid en 1538","1538 es el primer libro en español sobre enfermedades de niños; el primer hospital pediátrico fue en París (1802)."],
+["Declaración de los Derechos del Niño: aprobada por la OMS en 1977","La Declaración es de la ONU, 1959. 1977 es la fecha que dio la clase para el Programa Ampliado de Inmunización."],
+["Sales de rehidratación oral: introducidas a inicios del siglo XX","Inicios del s. XX fue la era terapéutica (antibióticos y vacunas); las SRO marcan la pediatría científica de los años 70."]],
+e:"Ojo: en clase se dijo '1902' para el hospital de París; la fecha correcta es 1802. Y el PAI: clase dijo 1977, OMS lo fecha en 1974."},
+
+{c:"c1",t:"Mortalidad infantil",q:"Según la clasificación vista, la mortalidad neonatal incluye las muertes ocurridas:",o:[
+["Antes de los 28 días de vida","Correcta: neonatal = menos de 1 mes (28 días)."],
+["Antes de cumplir 1 año","Eso define la mortalidad infantil, que incluye a la neonatal pero es más amplia."],
+["De la semana 28 de gestación al 7.º día","Eso se acerca al concepto de periodo perinatal, no a la mortalidad neonatal."],
+["Entre 1 y 5 años","Así se presentó en clase la mortalidad en la niñez (U5MR)."]],
+e:"Neonatal <28 días; infantil <1 año; en la niñez (U5MR) hasta los 5 años. Ojo: internacionalmente la U5MR cuenta todas las muertes antes de los 5 años (incluye las del primer año)."},
+
+{c:"c1",t:"Causas de mortalidad",q:"Sobre las causas de muerte infantil discutidas para el contexto dominicano, ¿cuál es correcta?",o:[
+["La neumonía es ~28% de las muertes por infección","Correcta: fue la cifra dada en clase (Sec. 01)."],
+["La EDA en RD se debe sobre todo a Giardia","El agente más frecuente de EDA mencionado fue el rotavirus."],
+["El dengue solo aparece en temporada de lluvias","Se mencionó como endémico: por ser país tropical hay casos todo el año."],
+["El paludismo es la primera causa en menores de 5","El paludismo está entre las causas mundiales (Nelson) y ha bajado mucho desde 2000; no fue la primera causa en RD."]],
+e:"Causas en RD (clase): neumonía, EDA (rotavirus), dengue, prevenibles por vacuna, accidentes y violencia. Mundial (Nelson): prematuridad, neumonía, asfixia perinatal, diarrea, paludismo."},
+
+{c:"c1",t:"Avances y amenazas",q:"¿Qué intervención redujo un 84% la sepsis neumocócica en niños con drepanocitosis?",o:[
+["Profilaxis con penicilina","Correcta: gracias a eso hoy ~95% de estos niños llega a los 18 años (Nelson)."],
+["Transfusiones crónicas programadas","Se usan en situaciones concretas de la drepanocitosis, pero no es la medida que se asocia a esa reducción."],
+["Hidroxiurea desde el diagnóstico","Reduce crisis (conocimiento general), pero el dato del 84% corresponde a la profilaxis antibiótica."],
+["Esplenectomía precoz","Al contrario: la falta de función esplénica es lo que los hace vulnerables al neumococo."]],
+e:"Amenazas actuales mencionadas: resistencia antimicrobiana y movimiento antivacunas, que nació de un estudio fraudulento y retractado que vinculó vacunas y autismo."},
+
+/* ================= CLASE 2 ================= */
+{c:"c2",t:"Antecedentes perinatales",q:"Niño de 4 años con sibilancias recurrentes. ¿Qué antecedente postnatal se asoció en clase con más riesgo de asma?",o:[
+["Antibióticos precoces","Correcta: el uso temprano de antibióticos se asoció a mayor riesgo de asma."],
+["Restricción del crecimiento intrauterino","El RCIU se relacionó con riesgo de talla baja, no con asma."],
+["Infección materna en el 1.er trimestre","Se asoció con riesgo de miocarditis/pericarditis."],
+["Asfixia perinatal","Su asociación con TDAH/autismo está en estudio; no se relacionó con asma."]],
+e:"Más del 80% del diagnóstico sale de una buena historia. Antecedentes no patológicos: prenatales, natales, postnatales, desarrollo, sueño, alimentación, esfínteres, dentición y desarrollo puberal."},
+
+{c:"c2",t:"Control de esfínteres",q:"¿A partir de qué edad se habla de enuresis y de encopresis?",o:[
+["Enuresis después de 5 años; encopresis después de 4","Correcta: así se dio en clase."],
+["Enuresis después de 4 años; encopresis después de 5","Está invertido: el control fecal se espera antes que el urinario nocturno."],
+["Ambas después de los 3 años","A los 3 años es normal no tener control completo, sobre todo nocturno."],
+["Ambas después de los 6 años","Se esperaría demasiado; a los 5 la enuresis ya se considera."]],
+e:"Enuresis: falta de control urinario después de los 5 años. Encopresis: después de los 4. En la clase 6 se ve primaria vs. secundaria."},
+
+{c:"c2",t:"Cribados neonatales",q:"Sobre los cribados neonatales vistos, ¿cuál es correcto?",o:[
+["El tamizaje metabólico se hace antes de las 72 h","Correcta: debe tomarse antes de las 72 horas de vida."],
+["El cribado visual es universal antes del alta","No es universal: se indica en prematuros extremos, uso de esteroides o sospecha de catarata."],
+["El auditivo se hace con electroforesis","El auditivo usa potenciales evocados; la electroforesis es para hemoglobinopatías."],
+["El tamizaje 'corto' detecta 27-30 patologías","El corto cubre 9; el completo por espectrometría de masas cubre ~27-30 o más."]],
+e:"Cribados: metabólico (<72 h), auditivo (potenciales evocados antes del alta), visual (selectivo) y hemoglobinopatías (electroforesis al nacer)."},
+
+{c:"c2",t:"Labs sin tamizaje",q:"Recién nacido de parto domiciliario sin ningún tamizaje. ¿Qué estudio se remarcó por el aumento de su patología en el país?",o:[
+["VDRL","Correcta: se insistió en la sífilis congénita, que va en aumento en RD."],
+["Serología para toxoplasmosis","Es parte del estudio TORCH, pero no fue lo que se remarcó en clase."],
+["Hemocultivo","Se pide ante sospecha de sepsis, no como sustituto del tamizaje."],
+["Ferritina","No forma parte de los labs listados para un RN sin tamizaje."]],
+e:"Si no hubo tamizaje: TSH, T4 libre, hemograma, tipificación y VDRL."},
+
+{c:"c2",t:"Comunicación con padres",q:"Una madre dice que su hijo febril 'convulsionó', pero describe temblores generalizados. ¿Qué maniobra se enseñó para diferenciarlo?",o:[
+["Sujetar el miembro: si sigue temblando, es convulsión","Correcta: el escalofrío cede al sujetar; la convulsión no."],
+["Sujetar el miembro: si el temblor cede, es convulsión","Está al revés: lo que cede con la sujeción es el escalofrío."],
+["Tomar la temperatura: >40 °C confirma convulsión","La temperatura no distingue un escalofrío de una convulsión."],
+["Llamarlo: si responde, es convulsión focal","Responder a la voz no es la maniobra enseñada ni define el tipo de crisis."]],
+e:"También se enseñó a corregir la temperatura axilar sumando ~0,5 °C."},
+
+{c:"c2",t:"Exploración física",q:"¿Cuáles son los componentes del Triángulo de Evaluación Pediátrica (TEP)?",o:[
+["Apariencia, trabajo respiratorio y color de piel","Correcta: se evalúa a simple vista, sin tocar al niño."],
+["Apariencia, frecuencia cardiaca y saturación","FC y saturación requieren contacto o equipo; el TEP es visual."],
+["Glasgow, trabajo respiratorio y llenado capilar","El Glasgow (modificado en <1 año) es parte del neurológico, no del TEP."],
+["Tono, llanto y temperatura","El tono y el llanto entran dentro de 'apariencia', pero la temperatura no es parte del TEP."]],
+e:"Signos vitales siempre por tabla de edad: FC de 60 es normal en adolescente y grave en un recién nacido."},
+
+{c:"c2",t:"Hallazgos por región",q:"En la exploración de un lactante, ¿qué hallazgo requiere evaluación urgente?",o:[
+["Hemangioma en cuello o muy extenso","Correcta: por localización o extensión obliga a evaluar de inmediato."],
+["Mancha mongólica sacra","Es normal y suele desaparecer hacia los 2 años."],
+["Lengua geográfica","Es benigna, aunque se asocia a atopia."],
+["Fositas preauriculares","Obligan a buscar malformación cardiaca/renal según la profesora, pero no son una urgencia."]],
+e:"Otros: cabello rubio/quebradizo (desnutrición o hipotiroidismo), caries (riesgo de endocarditis), Tanner 1-5 para pubertad precoz o retrasada."},
+
+{c:"c2",t:"Ética y legislación",q:"Una adolescente de 16 años llega sola con fiebre y pide acetaminofén. Según lo visto para RD, ¿qué corresponde?",o:[
+["Necesita un tutor legal que autorice","Correcta: en RD no existe la figura de menor emancipado; ni un acetaminofén sin tutor."],
+["Puede autorizarse sola por tener más de 14 años","No hay una edad de autonomía para tratamiento en la legislación descrita."],
+["Se trata como emancipada si vive sola","Esa figura existe en otros países, pero no en RD."],
+["Puede recibir medicamentos de venta libre","Se remarcó que ni el acetaminofén se puede dar sin tutor presente."]],
+e:"Ante rechazo religioso (Testigos de Jehová), la prioridad es salvar la vida."},
+
+{c:"c2",t:"Sospecha de abuso",q:"Ante sospecha de abuso sexual, ¿cuál es la conducta del pediatra general?",o:[
+["Describir, referir al médico legista y nunca evaluar sin testigo","Correcta: el pediatra general nunca certifica."],
+["Hacer el examen genital completo y certificar","Certificar corresponde al médico legista."],
+["Certificar solo si los hallazgos son evidentes","Aunque sean evidentes, no le corresponde certificar."],
+["Evaluar a solas con la niña para ganar su confianza","Nunca se evalúa sin testigo presente."]],
+e:"Solo describir y referir; el legista certifica."},
+
+{c:"c2",t:"Consulta de niño sano",q:"¿Con qué frecuencia se cita a un niño sano de 18 meses?",o:[
+["Cada 3 meses","Correcta: de 1 a 2 años, trimestral."],
+["Mensual","Eso es durante el primer año."],
+["Cada 4-6 meses","Eso es entre los 2 y 5 años."],
+["Anual","Eso es a partir de los 5 años."]],
+e:"Calendario: mensual el 1.er año; cada 3 meses de 1-2 años; cada 4-6 meses de 2-5 años; anual después de 5."},
+
+/* ================= CLASE 3 ================= */
+{c:"c3",t:"Crecimiento vs desarrollo",q:"¿Cuál enunciado es correcto?",o:[
+["Crecimiento es cuantitativo, desarrollo cualitativo; ambos son cefalocaudales","Correcta: crecimiento se mide; desarrollo son habilidades. Ambos son continuos y progresivos."],
+["Crecimiento es cualitativo, desarrollo cuantitativo; ambos son cefalocaudales","Está invertido: el que se mide (talla, peso) es el crecimiento."],
+["Ambos son cuantitativos y siguen dirección caudocefálica","Primero madura la cabeza, luego tronco y extremidades: es cefalocaudal."],
+["Crecimiento es cuantitativo; desarrollo es discontinuo","Ambos son continuos y progresivos."]],
+e:"Excepción: el estirón puberal empieza distal (extremidades) y avanza hacia el tronco. El factor modificable más importante del crecimiento es la nutrición."},
+
+{c:"c3",t:"Factores del crecimiento",q:"¿Cuál de estos es un factor MODIFICABLE del crecimiento según la clase?",o:[
+["Depresión materna","Correcta: los factores maternos (depresión, desnutrición, madre adolescente, tabaquismo) son modificables."],
+["Hormonas tiroideas","Se clasificaron como hormonales, no modificables."],
+["Talla familiar","Lo genético/hereditario no es modificable."],
+["Hormona de crecimiento","Hormonal, no modificable; su déficit produce enanismo."]],
+e:"Modificables: nutrición (el más importante), sistema de salud, ambiente y factores maternos."},
+
+{c:"c3",t:"Estirón puberal",q:"Sobre el estirón puberal, ¿cuál es correcto?",o:[
+["En niñas, la velocidad máxima ocurre en Tanner 2-3, antes de la menarquia","Correcta: 8-9 cm/año, unos 6 meses antes de la menarquia."],
+["En niñas, la velocidad máxima ocurre en Tanner 4-5, tras la menarquia","Después de la menarquia el crecimiento ya va desacelerando."],
+["Los varones alcanzan su pico antes que las niñas","Es más tardío en varones (9-10 cm/año) y siguen creciendo 2-3 años más."],
+["El brote empieza en el tronco y avanza a las extremidades","Empieza distal (extremidades) y avanza al tronco."]],
+e:"Periodos: rápido (concepción-4 años), estable (4 años-pubertad, ~4-5 cm/año) y estirón (15-20% de la talla adulta)."},
+
+{c:"c3",t:"Crecimiento fetal",q:"¿Por qué un prematuro de 30 semanas tiene alto riesgo de dificultad respiratoria?",o:[
+["El surfactante aumenta de forma importante hacia la semana 34-36","Correcta: empieza ~semana 24, pero la cantidad suficiente llega a las 34-36."],
+["El surfactante no empieza a producirse hasta la semana 36","Ya se produce desde ~la semana 24, solo que en poca cantidad."],
+["El periodo embrionario se extiende hasta la semana 32","El periodo embrionario termina en la semana 12."],
+["Los pulmones se forman después de la semana 30","La estructura pulmonar existe; lo que falta es la madurez del surfactante."]],
+e:"Embrionario hasta semana 12; fetal 12-40. Factores de riesgo materno: HTA, enfermedades crónicas, tóxicos, baja talla/peso, edad extrema, radiación, fármacos, infecciones."},
+
+{c:"c3",t:"Transición neonatal",q:"Madre preocupada porque su bebé de 3 días tiene manchas color ladrillo en el pañal. ¿Conducta?",o:[
+["Tranquilizar: son uratos, normales los primeros días","Correcta: son normales los primeros días."],
+["Pedir urocultivo por probable hematuria","Los uratos no son sangre; solo se estudia si persisten."],
+["Bilirrubinas por posible ictericia obstructiva","El color ladrillo de los uratos no es coluria."],
+["Referir a nefrología por cristaluria patológica","Sería exagerado en los primeros días; solo si persiste."]],
+e:"También: el meconio sale en las primeras 24 h y cambia de color al final de la 1.ª semana; la temperatura cae transitoriamente al nacer."},
+
+{c:"c3",t:"Crecimiento por tejidos",q:"¿Por qué las adenoides y amígdalas son más prominentes en la niñez?",o:[
+["El linfático llega a su máximo (sobre el adulto) ~7 años y luego involuciona","Correcta: explica la hipertrofia adenoamigdalar infantil."],
+["El linfático llega a su máximo a los 9 meses y luego involuciona","A los 9 meses termina su fase acelerada, pero el pico es ~7 años."],
+["Solo por infecciones repetidas; normalmente no supera al adulto","Fisiológicamente sí supera el tamaño adulto."],
+["El linfático crece igual que el resto y se estabiliza en la adolescencia","Tiene un patrón propio: sube por encima del adulto y luego involuciona."]],
+e:"Cerebro: duplica su volumen en el primer año; ~36% del adulto al mes, ~72% al año y ~83% a los 2 años."},
+
+{c:"c3",t:"Parámetros antropométricos",q:"Lactante que nació con 3,2 kg y 50 cm. Al año, ¿qué esperas aproximadamente?",o:[
+["9,6 kg, 75 cm y PC 46-47 cm","Correcta: triplica el peso, la talla aumenta 25-30 cm (≈50%)."],
+["6,4 kg, 75 cm y PC 43-44 cm","6,4 kg (duplicar) y PC 43-44 corresponden a los 6 meses."],
+["9,6 kg, 100 cm y PC 50 cm","100 cm es duplicar la talla (≈4 años) y PC 50 es del preescolar."],
+["12,8 kg, 65 cm y PC 46-47 cm","12,8 kg sería cuadruplicar; 65 cm es poco crecimiento."]],
+e:"Nacimiento: ~3-3,5 kg, ~50 cm, PC 34-35. 6 meses: duplica peso, PC 43-44. 1 año: triplica peso, ~75 cm, PC 46-47. Volver a medir el PC a las 48 h por remodelamiento del parto."},
+
+{c:"c3",t:"Perímetro cefálico",q:"¿Qué velocidad de crecimiento del PC se espera entre 0 y 3 meses?",o:[
+["2 cm/mes","Correcta: es la etapa de crecimiento cefálico más rápido."],
+["1 cm/mes","Corresponde a los 3-6 meses."],
+["1 cm cada 3 meses","Corresponde a 1-3 años."],
+["1 cm/año","Corresponde a 3-5 años."]],
+e:"Después de la etapa escolar el PC ya casi no crece."},
+
+{c:"c3",t:"Fórmulas de peso y talla",q:"Niño de 4 años. Con las fórmulas de clase, ¿peso y talla esperados?",o:[
+["16 kg y 101 cm","Correcta: peso = 4×2+8 = 16; talla = 4×6+77 = 101."],
+["11,5 kg y 101 cm","11,5 sale de aplicar la fórmula de 7-12 años, que no corresponde."],
+["16 kg y 89 cm","El peso está bien, pero la talla está mal calculada."],
+["20 kg y 105 cm","Sobreestima ambos valores."]],
+e:"3-12 meses: (meses+9)/2. 1-6 años: edad×2+8. 7-12 años: (edad×7−5)/2. Talla 2-14 años: edad×6+77."},
+
+{c:"c3",t:"Talla diana",q:"Madre de 160 cm y padre de 176 cm. ¿Talla diana de su hija?",o:[
+["161,5 cm","Correcta: [160 + (176 − 13)] ÷ 2 = 161,5."],
+["174,5 cm","Es la de un hijo varón: [(160 + 13) + 176] ÷ 2."],
+["168 cm","Es solo el promedio sin corregir los 13 cm."],
+["155 cm","No corresponde a ninguna fórmula correcta."]],
+e:"Los 13 cm son la diferencia media de estatura entre sexos. No aplica si hay diferencias extremas de estatura entre los padres."},
+
+{c:"c3",t:"Fontanelas",q:"¿Cuándo cierran normalmente las fontanelas?",o:[
+["Posterior a las 6-8 semanas; anterior a los 9-18 meses","Correcta: la posterior cierra muy pronto; la anterior puede cerrar desde los 9 meses y es normal hasta los 18."],
+["Posterior a los 9-18 meses; anterior a las 6-8 semanas","Está invertido."],
+["Ambas antes de los 6 meses","La anterior cerrada antes de los 6 meses sería precoz."],
+["Posterior al nacer; anterior a los 2-3 años","Una anterior abierta a los 3 años sería tardía."]],
+e:"Cierre anómalo: pensar en craneosinostosis (precoz) o hipotiroidismo/hidrocefalia (tardío) — conocimiento general."},
+
+{c:"c3",t:"Evaluación nutricional",q:"Niño con peso para la talla normal pero talla para la edad < −2 DE. ¿Qué indica?",o:[
+["Desnutrición crónica","Correcta: talla/edad identifica desnutrición crónica."],
+["Desnutrición aguda","Se ve con peso para la talla, que aquí es normal."],
+["Riesgo nutricional sin patología","Más allá de −2 DE ya es patología, no solo riesgo."],
+["No se puede saber sin peso para la edad","Peso/edad es general y no distingue aguda de crónica."]],
+e:"Orden de afectación: peso → talla → perímetro cefálico (el más protegido). Puntaje Z normal entre −1 y +1."},
+
+{c:"c3",t:"Perímetro braquial",q:"En un tamizaje comunitario, un niño tiene perímetro braquial de 11,8 cm. ¿Interpretación según la clase?",o:[
+["Amarillo: desnutrición moderada o riesgo","Correcta: 11-12,5 cm."],
+["Rojo: desnutrición severa","Rojo es < 11 cm según la clase."],
+["Verde: normal","Verde es > 12,5 cm."],
+["No es interpretable fuera de la adolescencia","El MUAC es justamente una herramienta rápida de tamizaje en niños."]],
+e:"Ojo: la OMS usa < 11,5 cm como punto de corte de desnutrición aguda severa; la clase dio < 11. Confírmalo con la profesora."},
+
+{c:"c3",t:"Hitos del desarrollo",q:"Lactante que se sienta sin apoyo y balbucea monosílabos, pero aún no hace pinza ni tiene ansiedad ante extraños. ¿Edad más probable?",o:[
+["6 meses","Correcta: sedestación sin soporte y balbuceo monosilábico."],
+["4 meses","A los 4 meses: manos en línea media, ríe, desaparece el Moro; aún no se sienta solo."],
+["9 meses","A los 9 meses ya hay pinza, permanencia del objeto y ansiedad ante extraños."],
+["12 meses","Ya caminaría solo y diría su primera palabra."]],
+e:"2 meses sonrisa social; 6 meses se sienta; 8-9 pinza y gateo; 12 camina y 1.ª palabra; 15-18 corre y 10-15 palabras; ~24 frases de 2 palabras; 36 triciclo."},
+
+{c:"c3",t:"Hitos del desarrollo",q:"Un niño dice 10-15 palabras, corre, sube escaleras con ayuda y finge darle comida a una muñeca. ¿Edad?",o:[
+["15-18 meses","Correcta: 4-6 palabras a los 15 m y 10-15 a los 18 m; corre ~16 m y finge juego con muñeca ~17 m."],
+["10-12 meses","Diría 'mamá/papá' y una primera palabra real, pero aún no correría."],
+["2-3 años","Ya diría 'yo', alternaría pies en escaleras y haría juego paralelo."],
+["3-4 años","Ya habría juego cooperativo, tiempo pasado y pata coja."]],
+e:"Si el niño señala y los padres solo le enseñan el objeto sin ponerle palabra, se pierde la oportunidad de estimular lenguaje."},
+
+{c:"c3",t:"Reflejos primitivos",q:"Lactante de 8 meses con reflejo de Moro completo. ¿Interpretación?",o:[
+["Anormal: debe desaparecer hacia los 4-6 meses","Correcta: su persistencia sugiere alteración neurológica."],
+["Normal: persiste hasta los 12 meses","El que persiste hasta 9-12 meses es la prensión plantar."],
+["Normal si persiste también la prensión plantar","La prensión plantar sí es normal a esa edad, pero no normaliza el Moro."],
+["Normal: el Moro persiste hasta los 18 meses","Lo que se mantiene hasta ~18 meses es el Babinski."]],
+e:"Moro 4-6 m; búsqueda 3-4 m; prensión palmar ~4 m; marcha automática ~2 m; Galant 2-4 m; prensión plantar 9-12 m; Babinski hasta 18 m."},
+
+/* ================= CLASE 4 ================= */
+{c:"c4",t:"Tipos de inmunidad",q:"Niño de 6 años con herida sucia y esquema de vacunación no verificable. ¿Qué se indica?",o:[
+["Toxoide más inmunoglobulina antitetánica","Correcta: la vacuna sola tarda 4-6 semanas en proteger; la inmunoglobulina (pasiva artificial) cubre desde ya mientras el toxoide (activa artificial) genera memoria."],
+["Solo toxoide tetánico, por memoria activa","Genera inmunidad activa duradera, pero no a tiempo. Sería suficiente en una herida limpia con esquema documentado e incompleto o con refuerzo vencido."],
+["Solo inmunoglobulina, por protección inmediata","Protege de inmediato pero es temporal: el niño no genera memoria. Siempre se acompaña de vacuna cuando el esquema no es verificable."],
+["Toxoide tetánico más antibiótico sistémico","El antibiótico puede necesitarse por la herida, pero no sustituye a la inmunoglobulina frente a la toxina tetánica."]],
+e:"Activa natural: el niño se enferma y produce anticuerpos. Activa artificial: vacuna. Pasiva natural: anticuerpos por placenta o lactancia. Pasiva artificial: inmunoglobulina administrada. Este caso combina las dos artificiales."},
+
+{c:"c4",t:"Inmunoglobulinas",q:"Un niño tiene IgG positiva e IgM negativa frente a un virus. ¿Cómo lo interpretas?",o:[
+["Memoria inmunológica por infección o vacunación pasada","Correcta: la IgG aislada indica contacto previo; no significa que esté enfermo ahora."],
+["Infección activa en curso","La infección activa o reciente se marca con IgM positiva. Sería correcto si la IgM fuera positiva."],
+["Infección muy temprana, antes de que suba la IgM","Es al revés: en la fase temprana aparece primero la IgM y después la IgG."],
+["Resultado falso positivo que hay que repetir","La IgG aislada es un patrón real y muy frecuente; no hay motivo para dudar del resultado."]],
+e:"Inmunidad innata: macrófagos, células asesinas y barreras físicas (piel, moco, cilios). Adaptativa: celular (linfocitos T citotóxicos) y humoral (linfocitos B que producen anticuerpos). IgM = activa/reciente; IgG aislada = memoria."},
+
+{c:"c4",t:"Tipos de vacunas",q:"¿Por qué se conjuga el polisacárido capsular en vacunas como la neumocócica 13-valente?",o:[
+["Los menores de 2 años responden mal al polisacárido solo","Correcta: unir el polisacárido a otra sustancia mejora la respuesta inmune en ese grupo de edad y genera memoria."],
+["Para convertirla en una vacuna viva atenuada","Conjugar no vuelve viva a una vacuna; las vivas atenuadas usan el microorganismo entero debilitado."],
+["Para inactivar la toxina y obtener un toxoide","Eso define a un toxoide: toxina modificada, no tóxica pero inmunogénica (ej. tetánico)."],
+["Para poder conservarla a temperatura ambiente","Todas las vacunas vistas se conservan entre 2 y 8 °C y protegidas de la luz UV, sean conjugadas o no."]],
+e:"Tipos: microorganismo entero (vivo atenuado o inactivado), partes del microorganismo (polisacáridos o toxoides) y conjugadas. La 23-valente de polisacáridos no genera memoria ni protege bien en menores de 2 años."},
+
+{c:"c4",t:"Vacunas vivas",q:"Un niño recibió la triple viral hace 2 semanas y hoy viene por la de varicela. ¿Conducta?",o:[
+["Esperar a completar 4 semanas desde la triple viral","Correcta: dos vivas se ponen el mismo día o separadas al menos 4 semanas."],
+["Aplicarla hoy, pero en otro miembro","Cambiar el sitio no evita la interferencia, que es sistémica (interferón). Solo valdría si fuera el mismo día que la triple viral."],
+["Esperar 6 meses por riesgo de púrpura","No existe ese intervalo. La púrpura trombocitopénica es un efecto adverso de la triple viral, no una regla de espaciamiento."],
+["Aplicarla hoy, porque entre vivas no hay intervalo","Solo es así cuando se aplican el mismo día. Con 2 semanas de diferencia la primera puede inhibir a la segunda."]],
+e:"La primera vacuna viva genera una respuesta de interferón tipo 1 inespecífica que puede inhibir la replicación e inmunogenicidad de la segunda. Punto a confirmar: Sec. 02 la aplicó solo a la triple viral; Sec. 01 a cualquier combinación de vivas."},
+
+{c:"c4",t:"BCG",q:"A las 6 semanas de la BCG, una madre consulta por una pústula de 9 mm en el deltoides izquierdo. ¿Conducta?",o:[
+["Tranquilizar y lavar solo con agua y jabón","Correcta: es la reacción vacunal esperada (pápula o pústula a las 4-8 semanas, con edema de 8-10 mm)."],
+["Drenar la pústula para evitar un absceso","Manipularla aumenta el riesgo de sobreinfección y osteomielitis. Solo se pensaría en intervenir ante un absceso verdadero con signos de infección."],
+["Indicar antibiótico tópico","No hay infección. Sería razonable solo si hubiera signos claros de sobreinfección bacteriana."],
+["Referir por sospecha de BCG diseminada","Una lesión local en el tiempo esperado no es enfermedad diseminada; esa preocupación es para inmunocomprometidos con síntomas sistémicos."]],
+e:"La cicatriz residual confirma que fue intradérmica. Su ausencia sugiere que se puso intramuscular o que no se aplicó."},
+
+{c:"c4",t:"BCG",q:"Sobre la BCG, ¿cuál enunciado es correcto?",o:[
+["Protege de formas graves y no se da a prematuros de bajo peso","Correcta: protege de TB miliar y meníngea, y como es viva está contraindicada en inmunocomprometidos y prematuros de bajo peso."],
+["Protege principalmente de la tuberculosis pulmonar clásica","No protege bien contra la forma pulmonar clásica; su valor está en prevenir las formas graves."],
+["Puede aplicarse en VIH porque es inactivada","Es viva atenuada (M. bovis), por eso está contraindicada en VIH, quimioterapia, radioterapia y embarazo."],
+["Se aplica intramuscular en el deltoides derecho","Es intradérmica, en el deltoides izquierdo por convención mundial."]],
+e:"En hijos de madre con VIH desconocido se puede esperar a descartar el diagnóstico y aplicarla más adelante (4-5 años) tras descartar TB activa con radiografía y análisis."},
+
+{c:"c4",t:"Hexavalente",q:"¿Qué contraindicación puntual se mencionó para el componente pertussis de la hexavalente?",o:[
+["Encefalopatía en los 7 días tras una dosis previa","Correcta: en ese caso no se repite el componente pertussis."],
+["Nódulo indoloro persistente en el muslo","Es un hallazgo frecuente y benigno que dura meses; se recomienda masaje. No contraindica nada."],
+["Febrícula después de la dosis previa","La febrícula y la inflamación local son efectos adversos esperados, no contraindicaciones."],
+["Antecedente familiar de convulsiones","No contraindica. Lo que aumenta el riesgo de convulsión es el antecedente personal de convulsión febril."]],
+e:"Hexavalente (RD cambió hace pocos meses desde la pentavalente): difteria, tétanos, pertussis, Hib, hepatitis B y polio inactivada. Intramuscular. Ventaja: menos pinchazos y mejor cumplimiento. Desventaja: ante anafilaxia no se sabe qué componente fue."},
+
+{c:"c4",t:"Polio",q:"¿Cuál diferencia entre la vacuna oral (OPV) y la inyectada (IPV) es correcta?",o:[
+["La OPV es viva y puede causar polio vacunal; la IPV es inactivada","Correcta: por eso la IPV es más segura y es la que va dentro de la hexavalente."],
+["La IPV es viva y está contraindicada en inmunocomprometidos","La IPV es inactivada. La contraindicada en inmunocomprometidos es la oral."],
+["La OPV es la incluida en la hexavalente por ser más segura","La de la hexavalente es la IPV; la OPV tiene el riesgo raro de polio asociada a la vacuna."],
+["Ambas son inactivadas y solo difieren en la vía","La OPV es de virus vivo atenuado; no solo cambia la vía."]],
+e:"Ya casi no se aplica sola. Posible asociación rara con Guillain-Barré. La polio está controlada pero no erradicada (persisten casos aislados en algunos países)."},
+
+{c:"c4",t:"Rotavirus",q:"Lactante de 8 meses y 10 días sin ninguna dosis contra rotavirus. ¿Conducta?",o:[
+["No aplicarla, porque ya pasó la ventana de edad","Correcta: la última dosis no debe darse después de los 8 meses 0 días."],
+["Aplicar Rotarix en 2 dosis separadas por 1 mes","Rotarix es efectivamente de 2 dosis, pero ya está fuera de la ventana permitida."],
+["Aplicar RotaTeq, que no tiene límite de edad","RotaTeq (3 dosis) tiene la misma ventana estricta."],
+["Aplicar una dosis única de rescate","No existe dosis de rescate fuera de la ventana de edad."]],
+e:"Rotarix = 2 dosis (gratuita); RotaTeq = 3 dosis (privada). Oral. Se autorizó en 1998, se retiró por invaginación y volvió reformulada. Contraindicada con antecedente de invaginación, malformación GI congénita o inmunodeficiencia."},
+
+{c:"c4",t:"Influenza",q:"¿Qué distingue a la vacuna de influenza del resto del esquema?",o:[
+["Es la única que se aplica cada año según la cepa circulante","Correcta: en RD se aplica entre septiembre y noviembre."],
+["Es la única de virus vivo que se aplica intramuscular","Es de virus inactivado. La versión intranasal (FluMist) se retiró por baja eficacia."],
+["Es la única que no necesita cadena de frío","Todas las vacunas vistas se conservan entre 2 y 8 °C."],
+["Es la única contraindicada en síndrome de Down","Al contrario: el síndrome de Down es grupo prioritario para recibirla."]],
+e:"Grupos prioritarios: Down, cardiópatas, diabéticos, inmunosuprimidos, adultos mayores, personal de salud, embarazadas y niños de 6-59 meses. Primovacunación en niños pequeños: 2 dosis separadas ~1 mes. Alergia grave al huevo: alternativa en células diploides humanas."},
+
+{c:"c4",t:"Neumococo y meningococo",q:"Contacto íntimo de un caso de meningococemia. ¿Qué profilaxis se indica?",o:[
+["Ceftriaxona o rifampicina","Correcta: son las opciones de profilaxis postexposición dadas en clase."],
+["Amoxicilina oral por 7 días","No es el esquema de profilaxis meningocócica; la amoxicilina se usa en otras infecciones."],
+["Penicilina benzatínica intramuscular","Es el tratamiento de la escarlatina, no la profilaxis de contactos de meningococo."],
+["Observación estricta por 48 horas","El meningococo puede causar shock y muerte en horas; esperar no es seguro en un contacto íntimo."]],
+e:"Meningococo: no es gratuita en RD; la conjugada protege mejor. Petequias o púrpura violácea que avanzan rápido. Indicada en personal de salud, contactos, inmunodeficientes, Down y viajeros. Neumococo conjugado: 2-4-6 meses + refuerzo; reduce el estado de portador (efecto rebaño)."},
+
+{c:"c4",t:"Triple viral",q:"¿Qué efecto adverso característico de la triple viral se mencionó en clase?",o:[
+["Púrpura trombocitopénica","Correcta: es el efecto adverso característico que se mencionó para la triple viral."],
+["Invaginación intestinal","Se asoció a la primera vacuna de rotavirus, lo que llevó a retirarla temporalmente."],
+["Nódulo indoloro que dura meses","Es típico de la hexavalente intramuscular en el muslo."],
+["Pústula en el sitio de inyección","Es la reacción esperada de la BCG a las 4-8 semanas."]],
+e:"Triple viral: viva atenuada, subcutánea. La gratuita usa ovoalbúmina de huevo de pato (contraindicada en alergia grave al huevo). Raras: neuropatía (rubéola), orquitis/parotiditis y PEES (sarampión)."},
+
+{c:"c4",t:"Varicela",q:"Niño de 3 años no vacunado, expuesto a varicela hace 3 días. ¿Qué es correcto?",o:[
+["La vacuna aún puede prevenir la enfermedad hasta 5 días tras la exposición","Correcta: es la vacuna más inmunógena del esquema y sirve como profilaxis postexposición."],
+["Ya no sirve, solo protege si se pone antes de la exposición","Funciona como profilaxis postexposición dentro de los 5 días."],
+["Está contraindicada porque es inactivada","Es de virus vivo atenuado; por eso está contraindicada en inmunocomprometidos, no en este niño."],
+["Solo funciona si se combina con inmunoglobulina","No hace falta para la profilaxis postexposición en un niño sano."]],
+e:"Desde el año. Subcutánea (puede ser IM). Contraindicada en alergia a gelatina y neomicina. No es gratuita en RD (~4,000 pesos/dosis), por eso persisten brotes; útil para controlar brotes hospitalarios."},
+
+{c:"c4",t:"VPH y hepatitis A",q:"Según la regla de edad dada en clase, ¿cuántas dosis de VPH necesita una adolescente que inicia a los 16 años?",o:[
+["Tres dosis","Correcta según la clase: después de los 15 años se necesita el esquema completo."],
+["Dos dosis","Es el esquema para quienes se vacunan antes de los 15 años."],
+["Ninguna, porque ya pasó la edad objetivo","La edad objetivo es 11-12 con catch-up a los 16; además se recomienda incluso si ya tuvo VPH."],
+["Solo si ya tuvo una infección previa","Se vacuna igual: no cura lesiones existentes, pero previene progresión y nuevas exposiciones."]],
+e:"Ojo: la clase también mencionó que la OMS redujo la recomendación a una sola dosis en el grupo objetivo; confirma con la profesora qué esquema quiere. Hepatitis A: inactivada, eficacia cercana al 100%, 2 dosis, no gratuita."},
+
+{c:"c4",t:"Historia del PAI",q:"¿Cuál afirmación sobre erradicación y el programa de RD es correcta?",o:[
+["La viruela tuvo su último caso natural en Somalia en 1977","Correcta: la certificación oficial fue en 1979; es la única enfermedad erradicada mundialmente."],
+["La polio quedó erradicada en el mundo en 1994","La polio está controlada, no erradicada: siguen casos aislados en algunos países."],
+["El programa de RD inició en 1959","Inició en 1978 como PAI. 1959 es la Declaración de los Derechos del Niño."],
+["RD, igual que EE.UU., no incluye la BCG","EE.UU. y Europa no la usan de rutina; RD sí la aplica al nacer."]],
+e:"Se considera erradicada una enfermedad tras ~10-12 años sin casos en el mundo. El PAI de RD hoy se llama Dirección de Inmunoprevenibles por Vacunación; tiene 1,431 puestos supervisados por la OMS para la cadena de frío."},
+
+{c:"c4",t:"Otras vacunas",q:"¿Por qué la vacuna del dengue tiene poca utilidad en el grupo con más casos?",o:[
+["No puede usarse en menores de 9 años","Correcta: justo el grupo más afectado queda fuera."],
+["Es oral y no se absorbe bien en lactantes","No es oral. Es una vacuna recombinante de virus atenuado."],
+["Necesita 7 dosis, como la antirrábica","Su esquema es de 3 dosis. Las 7 dosis fueron un ejemplo de antirrábica en exposición confirmada."],
+["Está prohibida en zonas endémicas","No está disponible en RD, pero no porque esté prohibida en zonas endémicas."]],
+e:"Otras: fiebre amarilla (única exigida internacionalmente al viajero, 6-8 semanas antes), Shingrix (>50 años), VRS en embarazadas, cólera (Haití 2012-2013), malaria (piloto 2015-2019 en Malawi, Ghana y Kenia) y antirrábica (según exposición; heridas en cara más urgentes)."},
+
+/* ================= CLASES 5 Y 8 · LACTANCIA ================= */
+{c:"c58",t:"Fisiología de la lactancia",q:"¿Cuál es la secuencia hormonal correcta que desencadena la succión?",o:[
+["Baja la dopamina, sube la prolactina y se inhibe la GnRH","Correcta: sin el freno de la dopamina sube la prolactina, que a su vez inhibe la GnRH y deja al ovario en reposo."],
+["Sube la dopamina, sube la prolactina y se estimula la GnRH","La dopamina es el factor inhibidor de la prolactina: si subiera, la prolactina bajaría."],
+["Sube la oxitocina, sube la prolactina y se estimula la ovulación","La oxitocina sí sube, pero la lactancia produce reposo ovárico, no ovulación."],
+["Baja la prolactina, sube la dopamina y sale la leche","Sería un freno a la producción. La salida de la leche depende de la oxitocina."]],
+e:"Por eso la lactancia exclusiva a libre demanda funciona como anticonceptivo. La hipófisis puede crecer hasta 3 veces en el embarazo y se normaliza 6 meses posparto. 'Seno vacío, más producción'."},
+
+{c:"c58",t:"Oxitocina",q:"Una madre muy ansiosa refiere que 'tiene leche pero no le sale'. ¿Qué lo explica mejor?",o:[
+["El estrés inhibe la oxitocina, responsable de la eyección","Correcta: hay producción (prolactina) pero falla la salida (oxitocina)."],
+["El estrés inhibe la prolactina, responsable de la eyección","La prolactina produce la leche; no es la que la expulsa."],
+["No hubo lactogénesis porque la placenta no ha salido","La lactogénesis se activa al salir la placenta; si ella ya tiene leche, la lactogénesis ocurrió."],
+["La ansiedad aumenta la dopamina y acelera la salida","La dopamina inhibe la prolactina y no tiene que ver con la eyección."]],
+e:"Oxitocina: la estimulan la succión y estímulos visuales, táctiles y olfatorios (oler al bebé, su llanto). La inhiben el estrés y la ansiedad; un abrazo prolongado la favorece. Prolactina: pico a los 30-45 min de iniciar la succión."},
+
+{c:"c58",t:"Composición de la leche",q:"¿Qué caracteriza al calostro?",o:[
+["Rico en IgA secretora y lactoferrina, pobre en grasa","Correcta: dato marcado como pregunta de examen."],
+["Mucha grasa y lactosa, con pocas inmunoglobulinas","Eso describe la tendencia de la leche de transición respecto al calostro."],
+["Gran volumen por toma y color blanco azulado","Es de poco volumen (< 5 mL por toma) y marrón oscuro por betacarotenos (hasta 10 veces más)."],
+["Composición estable con predominio de caseína","Eso describe la leche madura."]],
+e:"El calostro (parto al día 2-4) es espeso y facilita la expulsión del meconio."},
+
+{c:"c58",t:"Etapas de la leche",q:"Madre en el día 7 posparto produce ~500 mL/día, con más grasa y lactosa que al inicio. ¿Qué leche es?",o:[
+["Transición","Correcta: días 4-10, 400-600 mL/día, más lípidos y lactosa, menos proteína."],
+["Calostro","Dura del parto al día 2-4 y su volumen es mínimo."],
+["Madura","Aparece en la 3.ª-4.ª semana con 700-800 mL/día."],
+["Precalostro","Se produce durante el embarazo; no corresponde al día 7 posparto."]],
+e:"Madura: ~85-87% agua, carbohidratos 7,3 g/100 mL, proteína 1 g/100 mL, lípidos = 50% de las calorías. Desde el día 6 las mamas se sienten 'vacías' tras la toma, y eso es normal."},
+
+{c:"c58",t:"¿Se alimenta bien?",q:"¿Cuál es el mejor indicador de que un lactante se está alimentando bien?",o:[
+["La ganancia de peso","Correcta: es el mejor indicador."],
+["Más de 6-8 micciones al día con orina clara","Es un buen signo de hidratación, pero el mejor indicador sigue siendo el peso."],
+["Que las mamas se sientan vacías después de la toma","Desde el día 6 es normal y no mide cuánto tomó el bebé."],
+["Que cada toma dure más de 20 minutos","La duración no mide eficacia: un mal agarre puede dar tomas largas e improductivas."]],
+e:"Pérdida de peso normal: hasta 10% (vaginal) y 12% (cesárea), con recuperación en 2 semanas. Ojo: en la tabla de problemas aparece 'pérdida > 7%' como dato de ingesta insuficiente; pregunta a la profesora qué cifra quiere."},
+
+{c:"c58",t:"Beneficios",q:"¿En qué condición se reportó la mayor reducción de riesgo con leche humana exclusiva?",o:[
+["Enterocolitis necrosante en prematuros","Correcta: 82%."],
+["Infecciones gastrointestinales","Reducción de 64%, importante pero menor."],
+["Hospitalización por infección respiratoria","Hasta 72%, también menor que la de enterocolitis."],
+["Dermatitis atópica","Reducción de 42%."]],
+e:"Otras: otitis 23-50%, muerte súbita 36%, leucemia 19%/15%, muerte en el 1.er mes hasta 20%, obesidad hasta 12%. Madre: cáncer de mama 28% y ovario 21%, mejor involución uterina, ~700 kcal/día."},
+
+{c:"c58",t:"Técnica de lactancia",q:"¿Cuál recomendación de técnica es correcta?",o:[
+["La siguiente toma empieza por el último pecho que se ofreció","Correcta: el primero hasta sentirlo vacío, sacar gases, luego el segundo."],
+["Ofrecer cada pecho exactamente 10 minutos","No va por tiempo sino por vaciamiento."],
+["La madre debe inclinarse hacia el bebé para facilitar el agarre","Hay que evitarlo: se acerca el bebé a la madre, no al revés."],
+["Alimentar cada 3 horas estrictas, seis veces al día","Es a libre demanda, 8-12 veces al día."]],
+e:"Posición: espalda apoyada, cabeza y cuerpo del niño en línea, mentón tocando el pecho, labios evertidos, 'barriguita con barriguita'. Acostada de lado también es válida."},
+
+{c:"c58",t:"Extracción y conservación",q:"Una madre trabajadora pregunta cómo conservar su leche extraída. ¿Qué es correcto?",o:[
+["Refrigerada hasta 48 h y congelada hasta 6 meses","Correcta según el libro; se descongela bajo agua tibia y se usa en 24 h."],
+["Refrigerada hasta 7 días y calentada en microondas","El microondas nunca se usa: daña componentes y calienta de forma desigual."],
+["Congelada 2 semanas y hervida antes de usarla","Hervirla destruye células y componentes: es un 'producto vivo'."],
+["Si se descongeló y no se usó, se puede volver a congelar","Tras descongelar se usa completa en 24 h."]],
+e:"Manual: dedos en 'C' a 3-4 cm del pezón. Extractor: ~12-15 min. Para darla sin biberón: vasito o cucharita, para evitar la confusión pezón-tetina (el bebé toma el biberón muy rápido y luego rechaza el pecho)."},
+
+{c:"c58",t:"Contraindicaciones",q:"¿Cuál de estas es contraindicación ABSOLUTA de lactancia?",o:[
+["HTLV materno","Correcta: una de las tres absolutas, con VIH y galactosemia."],
+["Hepatitis B materna","Hepatitis A, B o C no contraindican la lactancia."],
+["Tuberculosis activa materna","Es relativa: se retoma 2-3 semanas después de iniciar tratamiento."],
+["Infección materna por citomegalovirus","No contraindica en el recién nacido a término, igual que COVID-19."]],
+e:"VIH: absoluta donde hay alternativa segura; solo en contextos de pocos recursos la OMS acepta lactancia exclusiva con TARGA. Galactosemia: fórmula de soya o arroz. Fenilcetonuria: alimentación mixta con fórmula especial."},
+
+{c:"c58",t:"Contraindicaciones relativas",q:"Madre con varicela que comenzó 3 días antes del parto. ¿Conducta con el recién nacido?",o:[
+["Aislarlo y que la madre se extraiga y descarte la leche","Correcta: hasta que sanen las lesiones (~21 días)."],
+["Lactancia directa, porque sus anticuerpos lo protegen","En esta ventana no hubo tiempo de pasar anticuerpos y el riesgo de varicela neonatal grave es alto."],
+["Suspender la lactancia de forma definitiva","Es una contraindicación relativa y temporal."],
+["Lactancia directa usando mascarilla","La mascarilla no evita el contagio por contacto con lesiones."]],
+e:"Aplica si la varicela materna aparece 5 días antes del parto o hasta 2 semanas después. Herpes 1 o sífilis en pezón/areola: se retoma al cicatrizar. Quimioterapia y fármacos radiactivos también son relativas."},
+
+{c:"c58",t:"Problemas frecuentes",q:"Madre al 4.º día con mamas llenas, duras y dolorosas y febrícula, sin eritema localizado. ¿Qué NO se debe indicar?",o:[
+["Masaje de la mama","Correcto que NO se indica: el masaje puede producir mastitis."],
+["Compresas calientes","Forman parte del manejo de la ingurgitación."],
+["Extraer la leche acumulada","Es clave en el manejo."],
+["Un AINE para el dolor","Está indicado; también un sostén firme y frío si duele mucho."]],
+e:"Ingurgitación: mamas llenas, duras, dolorosas, puede haber febrícula. Mal agarre (el bebé 'mastica' el pezón) causa grietas; para soltar la succión se pone el meñique en la comisura. Anquiloglosia y candidiasis también causan dolor."},
+
+{c:"c58",t:"Mastitis y absceso",q:"Madre con absceso mamario derecho ya drenado. ¿Qué pasa con la lactancia?",o:[
+["Sigue del lado izquierdo; del derecho se extrae y se descarta","Correcta: se suspende solo del lado afectado hasta resolver."],
+["Se suspende en ambos pechos hasta terminar antibióticos","Solo se suspende el lado del absceso."],
+["Sigue en ambos pechos sin restricciones","Eso aplica a la mastitis, no al absceso."],
+["Se suspende de forma definitiva","Es una medida temporal y unilateral."]],
+e:"Mastitis: 2-3% de lactantes, unilateral, signos de Celso, fiebre; S. aureus y S. pyogenes. Antibiótico + antiinflamatorio sin suspender la lactancia. El absceso es la complicación más grave y requiere drenaje."},
+
+{c:"c58",t:"Sangre en heces del lactante",q:"Lactante sano con estrías de sangre en las heces; la madre tiene pezones agrietados. ¿Primer paso?",o:[
+["Revisar los pechos de la madre","Correcta: suele ser sangre materna deglutida."],
+["Retirar los lácteos de la dieta materna","Se haría ante sospecha de APLV, después de descartar lo más simple."],
+["Pedir ecografía por posible invaginación","Sin dolor cólico, masa ni deterioro, no es la primera sospecha."],
+["Pedir coprocultivo","No hay diarrea ni signos de infección invasiva."]],
+e:"Ingesta insuficiente: aspecto tóxico, pocas evacuaciones o diuresis. Prematuros tardíos (34-36 s) hay que despertarlos para comer. Ictericia por lactancia insuficiente: causa frecuente de reingreso. Relactancia: con suplementador."},
+
+{c:"c58",t:"Código de sucedáneos",q:"¿Qué regula el Código Internacional de Comercialización de Sucedáneos?",o:[
+["La promoción de fórmulas, biberones y tetinas","Correcta: prohíbe la publicidad engañosa y los regalos al personal de salud."],
+["La composición nutricional mínima de las fórmulas","No regula cómo se formulan, sino cómo se comercializan."],
+["El registro sanitario de los extractores de leche","No es su objetivo."],
+["La licencia de maternidad de las trabajadoras","Es materia laboral, no del Código."]],
+e:"En RD la lactancia es prioridad nacional: exclusiva 6 meses y continuada hasta los 2 años o hasta que el niño quiera. Hora de oro: al pecho en la primera hora de vida."},
+
+/* ================= CLASE 5 ================= */
+{c:"c5",t:"Estimulación",q:"Unos padres preguntan si pueden usar un andador con ruedas. ¿Qué se explicó en clase?",o:[
+["Evitarlo: riesgo de caídas y acortamiento del Aquiles","Correcta: caídas y postura en puntas."],
+["Usarlo desde los 6 meses para acelerar la marcha","No acelera la marcha y expone a caídas."],
+["Usarlo solo cuando el niño ya gatea con soltura","El riesgo de caída y de postura en puntas existe igual."],
+["Es seguro si se usa menos de una hora al día","No se dio un tiempo seguro; la indicación fue no usarlo."]],
+e:"Un niño siempre acostado, sin exposición al piso, puede retrasarse en sentarse o gatear por falta de estímulo y no por patología. Existen programas de estimulación temprana públicos (CAID) y privados."},
+
+{c:"c5",t:"Señales de alarma del desarrollo",q:"¿Cuál de estas es una señal de alarma del desarrollo?",o:[
+["No sostiene la cabeza a los 4 meses","Correcta: el control cefálico se espera desde los 2-3 meses; a los 4 ya es alarma."],
+["No camina solo a los 10 meses","La marcha independiente se espera hacia los 12 meses."],
+["No combina 2 palabras a los 15 meses","Las frases de 2 palabras aparecen ~19-24 meses; sería alarma a los 24."],
+["Ansiedad ante extraños a los 9 meses","Es un hito normal a esa edad."]],
+e:"Otras alarmas: no se sienta ni rueda a los 9 meses, sin balbuceo a los 9 meses, y la regresión de habilidades. Causas de retraso: desnutrición (diluir leche o 'rendirla' con galleta), endocrinas, genéticas, neurológicas y negligencia."},
+
+{c:"c5",t:"Teratógenos",q:"Recién nacido con filtrum liso, labio superior fino, fisuras palpebrales cortas y microcefalia. ¿Qué exposición prenatal sospechas?",o:[
+["Alcohol","Correcta: síndrome alcohólico fetal, con RCIU y retraso motor."],
+["Cocaína","Da microcefalia, irritabilidad, temblores, hipertonía, convulsiones y ACV, pero no ese dismorfismo facial."],
+["Metanfetamina","Da RCIU y abstinencia neonatal (irritable o 'perdido')."],
+["Tabaco","Asociado a aborto, prematuridad, desprendimiento y labio/paladar hendido."]],
+e:"Cannabis: prematuridad, bajo peso, alteración del sueño y del llanto. HTA materna: menor flujo placentario y prematuridad iatrogénica. Fiebre en el 1.er trimestre: riesgo de pretérmino y neurodesarrollo."},
+
+{c:"c5",t:"Teratógenos",q:"Hijo de madre con diabetes mal controlada. ¿Qué esperas en el recién nacido?",o:[
+["Hipoglicemia precoz y riesgo de transposición de grandes vasos","Correcta: embriopatía diabética y alteraciones metabólicas."],
+["Hiperglicemia neonatal persistente y bajo peso al nacer","Lo típico es hipoglicemia por hiperinsulinismo y macrosomía."],
+["Hipercalcemia sintomática hacia las 24 horas de vida","Se describe hipocalcemia alrededor de las 24 h."],
+["Labio y paladar hendido como malformación típica","En clase se asoció al tabaco; en la diabetes se mencionaron defectos del tubo neural y cardiopatías."]],
+e:"Embriopatía diabética (4-8 veces más riesgo): anencefalia, mielomeningocele, TGV, CIV. Además: macrosomía, SDR, policitemia e hiperbilirrubinemia."},
+
+{c:"c5",t:"Síndrome de abstinencia",q:"Recién nacido de madre consumidora de opioides. ¿Cuándo suele iniciar el síndrome de abstinencia?",o:[
+["A las 48-72 h, con pico a los 3-7 días","Correcta: puede persistir 8-16 semanas."],
+["En las primeras 2 horas de vida","Es demasiado pronto para los opioides."],
+["A las 2-3 semanas de vida","Para entonces el cuadro ya suele estar en curso o pasado su pico."],
+["Solo después del primer mes","No; inicia en los primeros días."]],
+e:"Clínica: hiperactividad, llanto agudo, hipertonía, hiperreflexia, succión incoordinada, mal aumento de peso y convulsiones. En el embarazo: desprendimiento, prematuridad, preeclampsia, asfixia y meconio."},
+
+{c:"c5",t:"Vómitos en el lactante",q:"Lactante de 3 semanas con vómitos en proyectil no biliosos, hambriento y con mala ganancia de peso. ¿Diagnóstico más probable?",o:[
+["Estenosis hipertrófica del píloro","Correcta: aparece a la 2.ª-3.ª semana; puede palparse la 'oliva' y verse la onda peristáltica."],
+["Reflujo gastroesofágico fisiológico","Son regurgitaciones sin esfuerzo que no afectan la curva de peso."],
+["Invaginación intestinal","Es más típica de 3-18 meses, con cólico y heces en jalea de grosella."],
+["Obstrucción intestinal distal","Daría vómito bilioso, que obliga a descartarla antes de todo."]],
+e:"Enfoque del vómito: frecuencia, color (bilioso = obstrucción), tolerancia, curva de crecimiento y síntomas asociados. En lactantes pequeños puede ser la única manifestación de infección urinaria o del SNC."},
+
+{c:"c5",t:"Invaginación",q:"Niño de 9 meses con dolor cólico súbito, heces en jalea de grosella y masa alargada en el lado derecho. ¿Conducta?",o:[
+["Ecografía o enema de contraste urgente","Correcta: es una emergencia quirúrgica."],
+["Coprológico seriado por amebiasis","La sangre con moco puede orientar a amebiasis, pero aquí la clínica es de invaginación."],
+["Retirar la proteína de leche de vaca","La APLV no da masa abdominal ni dolor cólico súbito."],
+["SRO y control en 48 horas","Retrasar el diagnóstico puede llevar a necrosis intestinal."]],
+e:"Imagen 'en resorte' o 'copa' en el enema. Se asocia a rotavirus: el riesgo por la infección natural es mayor que el de la vacuna actual. Hernia inguinal encarcelada en lactante = cirugía inmediata. La apendicitis es rara pero no se descarta por edad."},
+
+{c:"c5",t:"APLV y otras causas",q:"¿Cómo se apoya el diagnóstico de alergia a la proteína de leche de vaca (APLV) según la clase?",o:[
+["Con exclusión y provocación","Correcta: se retira, se observa mejoría y se reintroduce para confirmar."],
+["Con coprocultivo seriado","Sirve para diarrea infecciosa bacteriana, no para alergia."],
+["Con pH-metría esofágica","Se usa para documentar reflujo ácido."],
+["Con test del sudor","Es la prueba de fibrosis quística."]],
+e:"Otras causas de vómito: fórmula mal preparada ('según la vecina'), leche descompuesta, cuerpos extraños, HTIC, cetoacidosis, uropatías y fármacos (eritromicina). Sobre vacunas y autismo: el autismo suele mostrar regresión justo en la edad en que se ponen varias vacunas, lo que alimentó el mito."},
+
+/* ================= CLASE 6 ================= */
+{c:"c6",t:"Reflejos primitivos",q:"¿Cuándo desaparece el reflejo tónico-cervical asimétrico ('del esgrimista')?",o:[
+["Entre los 5 y 7 meses","Correcta según la clase 6."],
+["Al mes de vida","Está presente al nacer y dura más de un mes."],
+["Entre los 12 y 18 meses","Su persistencia a esa edad sería patológica."],
+["Persiste toda la vida","Es un reflejo primitivo: debe desaparecer."]],
+e:"Al girar la cabeza extiende el brazo de ese lado y flexiona el otro. Búsqueda: acariciar la comisura y el bebé gira. La plasticidad neuronal explica por qué la falta de estímulo temprano tiene consecuencias aun sin patología."},
+
+{c:"c6",t:"Depresión posparto",q:"¿Por qué el pediatra debe tamizar depresión posparto en la madre?",o:[
+["Afecta al 10-15% y puede alterar crecimiento y desarrollo del hijo","Correcta: impacta la curva de crecimiento y el desarrollo cognitivo/conductual."],
+["Solo es relevante si la madre lo pide","El tamizaje se hace de rutina; muchas madres no lo mencionan."],
+["Es rara (< 1%) pero contraindica la lactancia","Es frecuente y no figura entre las contraindicaciones de lactancia."],
+["Afecta a la mitad de las madres y siempre requiere fármacos","La prevalencia dada fue 10-15% y el manejo depende de cada caso."]],
+e:"Punto a confirmar: el nombre de la escala (probablemente Edimburgo) y el punto de corte; la clase dio 8/9, mientras que suele citarse ≥ 10 o ≥ 13."},
+
+{c:"c6",t:"Lenguaje",q:"¿Cuál es una señal de alarma del lenguaje?",o:[
+["A los 24 meses no combina 2 palabras","Correcta: a los 24 meses debería hacer frases de 2 palabras, no solo imitaciones."],
+["A los 12 meses todavía no hace frases","Es esperable; las frases de 2 palabras aparecen ~19-24 meses."],
+["A los 18 meses dice unas 20 palabras","Es normal: la alarma sería menos de 15."],
+["A los 9 meses no dice 'mamá' con sentido","'Mamá/papá' se espera ~10 meses; a los 9 la alarma sería no balbucear."]],
+e:"Sueño del RN: 14-16 h/día. Pinza inmadura a los 9 meses y fina a los 12. Ansiedad ante extraños 6-9 meses; por separación 18-24 meses, sobre todo al dormir."},
+
+{c:"c6",t:"Juego y cognición",q:"Niño de 2 años y medio juega junto a otro, cada uno con lo suyo, y cree que la luna lo sigue. ¿Qué describe?",o:[
+["Juego paralelo y etapa preoperacional","Correcta: 2-3 años, pensamiento mágico y egocéntrico."],
+["Juego cooperativo y operaciones concretas","El cooperativo empieza ~3-4 años y las operaciones concretas desde ~5."],
+["Juego solitario y etapa sensoriomotora","Corresponde a menores de 2 años."],
+["Juego paralelo y operaciones formales","Lo formal es de la adolescencia."]],
+e:"Piaget: sensoriomotor (0-2), preoperacional (2-5), operaciones concretas (5 años-adolescencia), formal (adolescencia en adelante)."},
+
+{c:"c6",t:"Enuresis",q:"Niña de 7 años que controlaba de noche vuelve a mojar la cama tras nacer su hermano. ¿Clasificación?",o:[
+["Enuresis secundaria","Correcta: tenía control y lo perdió; se asocia a eventos estresantes."],
+["Enuresis primaria","Sería si nunca hubiera logrado el control nocturno."],
+["Encopresis secundaria","La encopresis es fecal, no urinaria."],
+["Normal hasta los 8 años","El control nocturno se espera resuelto hacia los 5 años."]],
+e:"Pubertad: niñas, telarquia 8-13 años; niños, volumen testicular 9-14 años y primera eyaculación 12-16."},
+
+{c:"c6",t:"Escala tipo Denver",q:"En la escala tipo Denver, un niño no hace las conductas de su edad pero sí las del grupo anterior. ¿Clasificación?",o:[
+["Limítrofe","Correcta: no alcanza su edad pero sí el grupo anterior."],
+["Normal","Sería si ejecutara las conductas de su edad."],
+["Patológico","Sería si tampoco hiciera las del grupo anterior."],
+["No evaluable","Con esos datos sí se puede clasificar."]],
+e:"Evalúa 4 áreas: personal-social, motora fina-adaptativa, lenguaje y motora gruesa. Los puntajes de corte salieron fragmentados en el audio; no los memorices sin verificar."},
+
+{c:"c6",t:"Signos de alarma",q:"Lactante de 6 meses con el puño cerrado y el pulgar incluido de forma persistente. ¿Interpretación?",o:[
+["Es un signo de alarma neurológico","Correcta: la persistencia del pulgar incluido a los 6 meses se dio como signo de alarma."],
+["Es normal hasta los 9 meses","A los 6 meses las manos ya deberían estar abiertas la mayor parte del tiempo."],
+["Es el reflejo de prensión palmar normal","La prensión palmar desaparece ~4 meses y no explica el pulgar incluido."],
+["Es una postura benigna sin significado","Su persistencia obliga a evaluación neurológica."]],
+e:"Signos al examen que sugieren riesgo: rasgos dismórficos (hendidura palpebral, pabellón mal implantado) y alteración del perímetro cefálico."},
+
+{c:"c6",t:"Amebiasis",q:"Niño con diarrea mucosanguinolenta y tenesmo; el coprológico muestra trofozoítos de E. histolytica. ¿Tratamiento correcto?",o:[
+["Metronidazol más diyodohidroxiquinoleína","Correcta: cubre trofozoíto y quiste (cada 8 h × 7 días)."],
+["Metronidazol solo durante 7 días","Mata el trofozoíto pero no el quiste; nunca se usa solo."],
+["Albendazol en dosis única","Es para helmintos, no para protozoos."],
+["Cloroquina por 7-10 días","Se reserva para absceso hepático amebiano tras drenaje."]],
+e:"Otras opciones: nitazoxanida (cada 12 h × 3 días, contraindicada en < 2 años) o quinfamida dosis única (quiste). Quiste = forma que contamina; trofozoíto = forma activa. E. coli comensal no se trata."},
+
+{c:"c6",t:"Amebiasis",q:"En sospecha de amebiasis, un coprológico único negativo:",o:[
+["No la descarta; se pide seriado de 3 días","Correcta: uno por día durante 3 días."],
+["La descarta si la muestra era líquida","Ningún tipo de muestra única la descarta."],
+["Obliga a pedir un enterotest","El enterotest (cápsula con hilo) se usa para Giardia."],
+["Indica tratar con nitazoxanida a cualquier edad","Está contraindicada en menores de 2 años."]],
+e:"Complicaciones: colitis amebiana (tenesmo, disentería) y absceso hepático (~1%, puede aparecer meses o años después). Puede o no haber fiebre."},
+
+{c:"c6",t:"Giardiasis",q:"¿Qué orienta a giardiasis frente a amebiasis?",o:[
+["Heces sin sangre que alternan con estreñimiento","Correcta: Giardia no invade la mucosa, por eso no da sangre ni moco."],
+["Diarrea mucosanguinolenta con tenesmo","Es el dato clave de la amebiasis."],
+["Prurito anal de predominio nocturno","Es el síntoma guía de los oxiuros."],
+["Prolapso rectal","Es la complicación característica de Trichuris."]],
+e:"Giardia es el protozoo intestinal más frecuente del mundo. Diagnóstico: coprológico seriado o enterotest. Tratamiento: nitazoxanida."},
+
+{c:"c6",t:"Ascaris",q:"Niño con alta carga de Ascaris lumbricoides. ¿Cuál es la secuencia de tratamiento?",o:[
+["Primero piperazina y después albendazol o pirantel","Correcta: primero se paraliza al parásito y luego se mata."],
+["Albendazol de inmediato para eliminarlo rápido","Sin paralizarlo puede migrar y causar pancreatitis, peritonitis o asfixia."],
+["Metronidazol junto con albendazol","El metronidazol es para protozoos; no aporta en ascariasis."],
+["Niclosamida en dosis única","Es el tratamiento de la teniasis."]],
+e:"No desparasitar sin coprológico previo. Ciclo: intestino → portal → pulmón (Löffler) → faringe → intestino. Mecanismos: mecánico (único que obstruye), tóxico, alérgico, nervioso reflejo (bruxismo) y proinfectivo. Ovillo con obstrucción: cirugía."},
+
+{c:"c6",t:"Oxiuros",q:"Escolar con prurito anal nocturno. ¿Diagnóstico y manejo?",o:[
+["Cinta adhesiva perianal y tratar a toda la familia","Correcta: más baño y cepillado de uñas."],
+["Coprológico seriado y tratar solo al niño","El coprológico no sirve bien (el parásito es muy pequeño) y la familia se reinfecta."],
+["Enterotest y nitazoxanida","El enterotest es para Giardia."],
+["Serología y albendazol solo al niño","No se usa serología y hay que tratar a todo el núcleo familiar."]],
+e:"Enterobius vermicularis: prurito anal nocturno es el síntoma guía."},
+
+{c:"c6",t:"Trichuris y uncinaria",q:"Niño que juega descalzo en tierra húmeda, con lesión serpiginosa en el pie y después anemia. ¿Mecanismo de la anemia?",o:[
+["Ferropénica por erosión de la mucosa duodenal","Correcta: es uncinariasis (Ancylostoma/Necator)."],
+["Megaloblástica por consumo de vitamina B12","No es el mecanismo descrito para uncinaria."],
+["Hemolítica por toxinas del parásito","No se describió hemólisis."],
+["Por sangrado colónico con prolapso rectal","Eso es Trichuris, que se ancla en el colon y da prolapso rectal y anemia microcítica leve."]],
+e:"Uncinaria: larva penetra piel → circulación → pulmón → deglutida → duodeno. Trichuris: se ancla y succiona sangre; anemia, retraso de crecimiento, déficit cognitivo y prolapso rectal."},
+
+{c:"c6",t:"Teniasis",q:"¿Cuál es la complicación más temida de la teniasis vista en clase?",o:[
+["Neurocisticercosis","Correcta: microcalcificaciones cerebrales y eosinofilia en LCR."],
+["Prolapso rectal","Es característico de Trichuris."],
+["Síndrome de Löffler","Es del paso pulmonar de Ascaris o uncinaria."],
+["Absceso hepático","Es complicación de la amebiasis."]],
+e:"Tratamiento: niclosamida. Ojo con los apuntes: dicen 'Taenia saginata' por carne de cerdo. La del cerdo y la que causa neurocisticercosis es T. solium; T. saginata viene de la res. Verifícalo con la profesora."},
+
+/* ================= CLASE 8 ================= */
+{c:"c8",t:"Rangos de temperatura",q:"Lactante con temperatura axilar de 39,5 °C. Según la clasificación dada en clase:",o:[
+["Fiebre alta","Correcta: 39-40 °C."],
+["Fiebre moderada","Corresponde a 38-39 °C."],
+["Hiperpirexia","Es > 40 °C axilar o > 41 °C rectal."],
+["Febrícula","Llega hasta 38 °C."]],
+e:"Normal 35-37 °C. La fiebre es el síntoma más frecuente en pediatría, más en RN y lactantes, y la causa más frecuente son las infecciones. En el RN la termorregulación es inmadura."},
+
+{c:"c8",t:"Tipos de fiebre",q:"Paciente con fiebre persistente que varía más de 0,5 °C al día sin llegar a normalizarse. ¿Qué tipo es?",o:[
+["Remitente","Correcta: es persistente pero oscila más de 0,5 °C al día."],
+["Sostenida","También es persistente, pero varía menos de 0,5 °C/día."],
+["Recurrente","Tiene periodos febriles separados por días de temperatura normal."],
+["Periódica","Se repite con una periodicidad regular."]],
+e:"Terciaria: P. vivax (días 1-3-6-9...). Cuaternaria: P. malariae (días 1 y 4). Bifásica: una sola enfermedad con dos periodos de fiebre ('joroba de camello')."},
+
+{c:"c8",t:"Tipos de fiebre",q:"Una sola enfermedad que da dos periodos de fiebre separados (patrón en 'joroba de camello') es una fiebre:",o:[
+["Bifásica","Correcta: una sola enfermedad con dos periodos febriles."],
+["Cuaternaria","Es la de P. malariae, con picos en los días 1 y 4."],
+["Recurrente","Alterna periodos febriles con intervalos normales, sin el concepto de una sola enfermedad en dos fases."],
+["Terciaria","Es la de P. vivax, con picos cada 48 h."]],
+e:"Condiciones fisiológicas que suben la temperatura: ciclo menstrual, tensión psíquica, comida copiosa, ejercicio intenso y esfuerzo respiratorio en crisis asmática."},
+
+{c:"c8",t:"Repercusión de la fiebre",q:"¿En cuál de estos pacientes los efectos fisiológicos de la fiebre justifican más bajarla?",o:[
+["Cardiópata con insuficiencia cardiaca","Correcta: la fiebre eleva el consumo de O2, la producción de CO2 y el gasto cardiaco."],
+["Escolar sano con faringitis viral y buen estado","La fiebre suele ser un mecanismo de defensa; no siempre hay que bajarla."],
+["Adolescente con 38 °C bien tolerados","Es febrícula; tratar sería más por confort que por riesgo."],
+["Lactante sano con febrícula tras una vacuna","Es una reacción esperada; no hay comorbilidad que se descompense."]],
+e:"También puede descompensar anemia crónica, enfermedad pulmonar crónica y diabetes. Manifestaciones: taquicardia (la clase dio ~15 lpm por grado), taquipnea, palidez inicial, cefalea, anorexia, mialgias y vómitos."},
+
+{c:"c8",t:"Convulsiones febriles",q:"¿Qué rango de edad tiene más riesgo de convulsiones febriles?",o:[
+["De 6 meses a 5 años","Correcta: es el rango de mayor riesgo dado en clase."],
+["De 0 a 3 meses","Una convulsión con fiebre en esa edad obliga a pensar primero en infección grave del SNC."],
+["De 5 a 10 años","Fuera del rango típico; sería más sospechoso de epilepsia."],
+["Adolescencia","No es la edad de las convulsiones febriles."]],
+e:"Los pacientes con epilepsia idiopática convulsionan con más frecuencia durante procesos febriles."},
+
+{c:"c8",t:"Agudo vs prolongado",q:"Niño con 10 días de fiebre. ¿Cómo se clasifica y cuál es la etiología más frecuente?",o:[
+["Síndrome febril prolongado; infecciosa","Correcta: > 1 semana y lo más frecuente sigue siendo infeccioso (TB, paludismo, leptospirosis)."],
+["Síndrome febril agudo; viral","Agudo es 1 semana o menos (90% viral)."],
+["Fiebre de origen desconocido; reumatológica","Para FOD hacen falta 3 semanas de estudio ambulatorio o 1 semana hospitalizado sin causa."],
+["Síndrome febril prolongado; neoplásica","Las neoplasias están entre las causas, pero no son las más frecuentes."]],
+e:"Prolongado: infecciosas, colágeno (fiebre reumática, LES, AR), neoplasias, neuropsíquicas (abscesos, tumores) e iatrogénicas (penicilina, isoniazida, barbitúricos)."},
+
+{c:"c8",t:"Fiebre de origen desconocido",q:"¿Cuándo se habla de fiebre de origen desconocido (FOD)?",o:[
+["Tras 3 semanas ambulatorio o 1 semana ingresado sin causa","Correcta: fiebre termometrada sin causa tras ese tiempo de estudio."],
+["Fiebre de más de 1 semana sin foco al examen inicial","Eso es un síndrome febril prolongado, no todavía una FOD."],
+["Tras 3 días de hospitalización sin diagnóstico","Es muy poco tiempo para definir FOD."],
+["Fiebre que no baja con antipiréticos","La respuesta al antipirético no define FOD."]],
+e:"Suelen ser enfermedades típicas con presentación atípica. Más comunes según la clase: AR y LES. Una FOD > 6 meses en niños debe sugerir enfermedad granulomatosa o autoinmunitaria."},
+
+{c:"c8",t:"Pirógenos",q:"¿Cuál de estos es un pirógeno endógeno?",o:[
+["IL-1","Correcta: junto con IL-6, TNF-α e interferones."],
+["Endotoxina bacteriana","Es un producto microbiano: pirógeno exógeno."],
+["Peptidoglicano","También es exógeno, de la pared bacteriana."],
+["Inmunocomplejos","Se clasificaron como 'otros factores pirógenos'."]],
+e:"El hipotálamo regula la temperatura con vasodilatación/constricción, sudoración/piloerección, actividad muscular, metabolismo y hormonas."},
+
+/* ================= CLASE 9 ================= */
+{c:"c9",t:"Fórmulas especiales",q:"Lactante de 4 meses con APLV mediada por IgE. ¿Qué opción NO está indicada?",o:[
+["Fórmula de soya","Correcta (no indicada): no se usa en APLV IgE ni en menores de 6 meses con APLV IgE."],
+["Fórmula extensamente hidrolizada","Es una opción indicada en APLV."],
+["Fórmula elemental de aminoácidos","Se usa si no mejora con la extensamente hidrolizada."],
+["Leche materna con dieta materna sin lácteos","Si la madre lacta, continuar el pecho con exclusión materna de lácteos es una opción válida (manejo habitual de APLV)."]],
+e:"La soya tampoco se usa como prevención en niños de alto riesgo ni para cólico, regurgitación o llanto nocturno. Está pensada para dietas exentas de lactosa."},
+
+{c:"c9",t:"Hidrolizados",q:"¿Para qué está indicada la fórmula parcialmente hidrolizada (hipoantigénica)?",o:[
+["Prevenir dermatitis atópica en lactantes de alto riesgo","Correcta: en los alimentados con fórmula y con riesgo atópico elevado."],
+["Tratar una APLV ya diagnosticada por clínica","No debe darse a lactantes con APLV; para eso es la extensamente hidrolizada."],
+["Manejar un síndrome de intestino corto posquirúrgico","Es indicación de la extensamente hidrolizada (hipoalergénica)."],
+["Preparar al paciente para una colonoscopia","Es una de las indicaciones de la fórmula elemental."]],
+e:"Hipoalergénica = extensamente hidrolizada (malabsorción de grasa, intestino corto, APLV). Hipoantigénica = parcialmente hidrolizada (prevención). La anticólico se parece a la parcialmente hidrolizada, con menos lactosa."},
+
+{c:"c9",t:"Fórmulas especiales",q:"¿Cuál característica corresponde a la fórmula elemental?",o:[
+["Lleva TCM y puede requerir suplementar calcio y fósforo","Correcta: además es la más costosa (~6,000-7,000 pesos)."],
+["Es la más barata y la primera línea en la APLV","Es la más cara y es la siguiente línea si falla la hidrolizada."],
+["Cambia la proteína láctea por harina de soya entera","Eso describe la fórmula de soya."],
+["Contiene palmitato para ablandar las heces","Eso es la fórmula antiestreñimiento."]],
+e:"Antirreflujo: espesante (maíz, arroz, maicena). Pretérmino: ~24 kcal/oz, imita el crecimiento del 3.er trimestre sin sobrecarga renal. Errores innatos: difícil acceso en RD."},
+
+{c:"c9",t:"Intolerancia a lactosa vs APLV",q:"Sobre la fórmula sin lactosa, ¿qué es correcto?",o:[
+["Cambia el carbohidrato por dextrinomaltosa; la proteína sigue siendo láctea","Correcta: por eso sirve en intolerancia a la lactosa pero no en APLV."],
+["Es tratamiento de la APLV porque elimina la proteína de la leche","No elimina la proteína: confundir ambas es el error que la profesora remarcó."],
+["Sustituye la proteína láctea por soya","Esa es la fórmula de soya."],
+["Contiene espesante de arroz o maíz","Esa es la antirreflujo."]],
+e:"Punto de examen: intolerancia a la lactosa (problema del azúcar) y APLV (problema inmunológico con la proteína) son condiciones distintas."},
+
+{c:"c9",t:"Leches de continuidad",q:"¿Desde cuándo se puede introducir una leche de crecimiento o continuidad?",o:[
+["Después del año","Correcta según la clase."],
+["Desde los 4 meses","Antes de los 6 meses ni siquiera se inicia la alimentación complementaria."],
+["Desde los 6 meses","A los 6 meses se inicia la complementaria, pero la leche de continuidad espera al año."],
+["Desde los 9 meses","Todavía no; la indicación fue después del año."]],
+e:"La clase dijo que la leche de vaca enlatada está contraindicada antes del año 'por riesgo de botulismo'. Ojo: el botulismo del lactante se asocia clásicamente a la miel; las razones habituales para evitar la leche de vaca son el riesgo de anemia ferropénica y la carga renal de solutos (conocimiento general). Pregunta a la profesora."},
+
+{c:"c9",t:"Alimentación complementaria",q:"¿Cuál indicación de alimentación complementaria es correcta?",o:[
+["Un alimento nuevo cada 2 días, empezando por los ricos en hierro","Correcta: permite identificar el alimento que cause reacción."],
+["Retrasar huevo y gluten hasta el año para evitar alergias","Los alergénicos y el gluten se introducen desde los 6 meses en pequeñas cantidades."],
+["Ofrecer agua antes del sólido para facilitar la deglución","El agua va después del alimento, para no 'llenar' al niño sin nutrientes."],
+["Endulzar con un poco de miel para mejorar la aceptación","No se añade sal, azúcar, miel ni endulzantes en el primer año."]],
+e:"Inicia a los 6 meses y complementa (no sustituye) la leche materna, que sigue a libre demanda. Frutas y verduras no más del 20% del plato; cereales integrales; sal máximo 2 g/día en < 2 años; no jugos de caja ni refrescos."},
+
+{c:"c9",t:"Alimentación complementaria",q:"Una madre empezó papillas a los 3 meses. ¿Qué riesgo se asocia a la introducción temprana?",o:[
+["Broncoaspiración, gastroenteritis y obesidad a largo plazo","Correcta: son riesgos de introducirla antes de los 6 meses."],
+["Carencia de hierro y zinc","Se asocia a la introducción tardía."],
+["Peor aceptación de nuevas texturas","También es un riesgo de introducirla tarde."],
+["Alteración de las habilidades motoras orales","Se describió en niños con exceso de biberón y cereal, es decir, por introducción tardía de sólidos."]],
+e:"Temprana: atragantamiento, aspiración, GEA, infecciones altas, menor biodisponibilidad del hierro de la leche, obesidad, eczema, DM1, destete precoz. Tardía: carencias, más alergias, rechazo de texturas, mala masticación."},
+
+{c:"c9",t:"Alimentación complementaria",q:"¿Por qué se evitan las hojas verde oscuro como la espinaca en lactantes pequeños?",o:[
+["Por riesgo de metahemoglobinemia por nitratos","Correcta: tienen alto contenido de nitratos."],
+["Porque tienen exceso de vitamina K","La vitamina K natural no es tóxica."],
+["Porque pueden causar convulsiones","Eso se comentó del orégano en exceso, como dato curioso."],
+["Porque contienen gluten","La espinaca no contiene gluten."]],
+e:"BLW: trozos pequeños y blandos, el niño elige; requiere buen desarrollo neurológico, sedestación firme y supervisión constante. No usar estimulantes del apetito en niños sanos."},
+
+{c:"c9",t:"Vitaminas liposolubles",q:"Lactante con fontanela abombada, vómitos, irritabilidad y hepatomegalia tras suplementación casera excesiva. ¿Qué vitamina sospechas?",o:[
+["Vitamina A","Correcta: su toxicidad incluye fontanela abombada, hepatoesplenomegalia, dolor óseo e hipercalcemia."],
+["Vitamina D","Su toxicidad da hipercalcemia, poliuria/oliguria, HTA y nefrocalcinosis, sin fontanela abombada característica."],
+["Vitamina E","Su exceso interfiere con plaquetas y vitamina K y aumenta el sangrado."],
+["Vitamina K","La natural no es tóxica; la sintética (K3) da hemólisis e ictericia."]],
+e:"Déficit de vitamina A: nictalopía, manchas de Bitot y queratomalacia (ceguera)."},
+
+{c:"c9",t:"Vitaminas liposolubles",q:"Niño de 2 años con piernas arqueadas, rosario costal y retraso del crecimiento. ¿Qué déficit?",o:[
+["Vitamina D","Correcta: raquitismo antes del cierre de las placas de crecimiento."],
+["Vitamina C","El escorbuto da dolor y edema de piernas, hemorragia gingival y petequias."],
+["Vitamina A","Da alteraciones visuales y oculares."],
+["Vitamina B1","El beriberi es neurológico o cardiaco."]],
+e:"Requerimiento: 400 UI (10 µg) en < 1 año y 600 UI (15 µg) desde el año. Fuentes: huevo, pescado, hongos."},
+
+{c:"c9",t:"Vitaminas liposolubles",q:"¿Por qué se aplica vitamina K a todo recién nacido?",o:[
+["Para prevenir la enfermedad hemorrágica del recién nacido","Correcta: es necesaria para los factores II, VII, IX y X."],
+["Para prevenir la anemia hemolítica del prematuro","Eso se relaciona con el déficit de vitamina E."],
+["Para prevenir el raquitismo","Es la vitamina D."],
+["Para prevenir la ceguera nocturna","Es la vitamina A."]],
+e:"Vitamina E: antioxidante; su déficit es raro (prematuros, fibrosis quística) con anemia hemolítica, ataxia y neuropatía."},
+
+{c:"c9",t:"Vitaminas hidrosolubles",q:"Adolescente con dieta basada en maíz que presenta diarrea, dermatitis en zonas expuestas al sol y desorientación. ¿Diagnóstico?",o:[
+["Pelagra por déficit de B3","Correcta: diarrea, dermatitis en zonas fotoexpuestas y alteración neurológica, con dieta de maíz."],
+["Beriberi por déficit de B1","Se asocia a arroz pulido y da clínica neurológica o cardiaca."],
+["Escorbuto por déficit de vitamina C","Da sangrado gingival, petequias y mala cicatrización."],
+["Déficit de B2","Da glositis, queilosis, fotofobia y lagrimeo."]],
+e:"Pelagra: diarrea, dermatitis y alteración neurológica. También en anorexia nerviosa y síndrome carcinoide. Tratamiento: 50-300 mg/día de niacina."},
+
+{c:"c9",t:"Vitaminas hidrosolubles",q:"Niño en tratamiento prolongado con isoniazida presenta irritabilidad y convulsiones. ¿Qué déficit sospechas?",o:[
+["B6 (piridoxina)","Correcta: también puede dar anemia hipocrómica."],
+["B1 (tiamina)","Su déficit se asocia a arroz pulido y alcoholismo, no a isoniazida."],
+["B12 (cobalamina)","Se asocia a dietas veganas, Crohn y anemia perniciosa."],
+["B9 (ácido fólico)","Se asocia a antiepilépticos y malabsorción, y da anemia megaloblástica."]],
+e:"B6 en convulsiones dependientes: 100 mg IM o IV. B12: 1.000 µg IM. Fólico: 0,5-1 mg/día."},
+
+{c:"c9",t:"Vitaminas hidrosolubles",q:"¿Qué describe el beriberi húmedo?",o:[
+["Taquicardia, edema, cardiomegalia e insuficiencia cardiaca","Correcta: es la forma cardiaca."],
+["Neuritis periférica, dolores musculares y ataxia","Es el beriberi seco (neurológico)."],
+["Glositis, queilosis y fotofobia","Es el déficit de B2."],
+["Hemorragia gingival y petequias","Es el escorbuto."]],
+e:"B1: fuentes carne de cerdo, hígado, arroz no molido. Tratamiento 3-5 mg/día durante 6 semanas."},
+
+{c:"c9",t:"Minerales",q:"Lactante con dermatitis periorificial y de extremidades, diarrea y retraso de crecimiento, con patrón hereditario recesivo. ¿Diagnóstico?",o:[
+["Acrodermatitis enteropática por déficit de zinc","Correcta: es una malabsorción de zinc."],
+["Enfermedad de Menkes por déficit de cobre","Da despigmentación de pelo y piel y síntomas neurológicos."],
+["Enfermedad de Keshan por déficit de selenio","Da cardiomiopatía."],
+["Enfermedad de Wilson por exceso de cobre","Da lesión hepática y cerebral, no esta dermatitis."]],
+e:"Yodo: bocio e hipotiroidismo. Cromo: intolerancia a la glucosa. Flúor: caries (déficit) y fluorosis (exceso). Hierro: anemia y alteración del aprendizaje."},
+
+{c:"c9",t:"Calcio corregido",q:"Niño desnutrido con calcio sérico de 7,6 mg/dL y albúmina de 2,0 g/dL. ¿Calcio corregido?",o:[
+["9,2 mg/dL; no hay hipocalcemia real","Correcta: 7,6 + 0,8 × (4 − 2) = 9,2."],
+["7,6 mg/dL; hay hipocalcemia real","Ignora la hipoalbuminemia, que baja falsamente el calcio medido."],
+["6,0 mg/dL; hipocalcemia severa","Resta la corrección en vez de sumarla."],
+["8,4 mg/dL; hipocalcemia leve","Solo suma 0,8 una vez; olvida multiplicar por la diferencia de albúmina."]],
+e:"Calcio corregido = calcio medido + 0,8 × (4,0 − albúmina). Nunca corregir una 'hipocalcemia' en un desnutrido sin calcularlo antes."},
+
+{c:"c9",t:"PANDAS/PANS",q:"Niño de 6 años con aparición súbita de tics y conductas obsesivo-compulsivas tras una faringitis estreptocócica. ¿Qué sospechas?",o:[
+["PANDAS/PANS","Correcta: síndrome neuropsiquiátrico de inicio agudo asociado a infección estreptocócica o viral."],
+["Exceso de energía normal para la edad","La clave es el inicio súbito tras una infección; la curiosidad normal no aparece de golpe."],
+["TDAH","El TDAH no tiene un inicio agudo tras una infección."],
+["Trastorno del espectro autista","Se manifiesta en edades más tempranas y no de forma súbita a los 6 años."]],
+e:"Aparece desde los 3 años. El profesor dijo que se verá más adelante."},
+
+{c:"c9",t:"Crup",q:"Niño de 2 años con 2 días de catarro que despierta de noche con tos perruna, estridor y disfonía. ¿Agente más probable?",o:[
+["Virus parainfluenza","Correcta: ~75% de los casos de crup."],
+["Haemophilus influenzae tipo b","Era la causa clásica de epiglotitis, hoy rara por la vacuna."],
+["Adenovirus","Puede causar crup y suele ser más severo, pero no es el más frecuente."],
+["Streptococcus pyogenes","Causa faringoamigdalitis y escarlatina, no crup."]],
+e:"Manejo: humedad (aire fresco, 'abrir la nevera'), lavado nasal, líquidos; en casos más severos dexametasona IM o prednisolona VO y epinefrina racémica nebulizada."},
+
+{c:"c9",t:"Crup",q:"Después de nebulizar epinefrina racémica a un niño con crup, ¿qué hay que vigilar?",o:[
+["Efecto rebote al pasar su acción","Correcta: es un vasoconstrictor local de acción corta."],
+["Hipoglicemia","No es un efecto esperado de la epinefrina nebulizada."],
+["Síndrome del bebé gris","Se asocia al cloranfenicol."],
+["Hipertensión intracraneal","No es una complicación de este tratamiento."]],
+e:"Traqueítis bacteriana: rara pero grave, requiere ingreso y antibiótico IV. El cloranfenicol se mencionó como reserva por riesgo de síndrome del bebé gris."},
+
+{c:"c9",t:"Epiglotitis",q:"Niño febril, con aspecto tóxico y sialorrea marcada. ¿Qué NO se debe hacer?",o:[
+["Explorar la garganta con depresor de forma agresiva","Correcto que NO se hace: puede causar obstrucción completa."],
+["Mantenerlo tranquilo en brazos de la madre","Es correcto: agitarlo empeora la obstrucción."],
+["Preparar el manejo de la vía aérea en un sitio controlado","Es lo indicado ante sospecha de epiglotitis."],
+["Preguntar si tiene la vacuna contra Hib","Es relevante: Hib era la causa clásica."]],
+e:"Crup en radiografía de cuello: signo de la 'punta de lápiz' o 'reloj de arena' (estrechamiento subglótico)."},
+
+{c:"c9",t:"IRA altas",q:"¿Cuál enunciado sobre las infecciones respiratorias altas es correcto?",o:[
+["La mayoría de las faringoamigdalitis en < 5 años son virales","Correcta: ~80%."],
+["Resfriado común y gripe son la misma entidad","Rinofaringitis, resfriado y catarro son sinónimos; la gripe la causa específicamente el virus influenza."],
+["La epiglotitis por Hib sigue siendo muy frecuente","Hoy es mucho menos frecuente gracias a la vacunación."],
+["Son causa menor de mortalidad en países en desarrollo","Las infecciones respiratorias son la primera causa de mortalidad infantil en esos países."]],
+e:"Factores de riesgo: cambios de clima, hacinamiento y pobreza (también asociada a más asma)."},
+
+/* ================= CLASE 10 ================= */
+{c:"c10",t:"Definición de diarrea",q:"¿Cuál es la definición de diarrea aguda vista en clase?",o:[
+["3 o más evacuaciones blandas en 24 h, por menos de 14 días","Correcta: aumento de frecuencia y menor consistencia, de inicio súbito y < 14 días."],
+["5 o más evacuaciones en 24 h, por menos de 7 días","Ni el número ni la duración corresponden a la definición."],
+["3 o más evacuaciones en 24 h, por más de 14 días","Más de 14 días es diarrea crónica o persistente."],
+["Cualquier evacuación líquida aislada en un lactante","Una sola evacuación no define diarrea."]],
+e:"También > 10 g/kg/día en lactantes y > 200 g/día en mayores. Es la 3.ª causa de muerte en < 5 años (OMS); la muerte suele ser por deshidratación. Moco + sangre también puede ser una invaginación."},
+
+{c:"c10",t:"Etiología de la diarrea",q:"Lactante de guardería con vómitos abundantes y diarrea acuosa profusa. ¿Agente más probable?",o:[
+["Rotavirus","Correcta: los virus causan ~75% y el rotavirus es el principal; da más vómitos que otros agentes."],
+["Shigella","Bacteria invasiva: fiebre alta persistente y disentería."],
+["Entamoeba histolytica","Da diarrea con sangre."],
+["Giardia lamblia","Diarrea explosiva con cólicos, flatulencia y pérdida de peso, sin vómitos tan marcados."]],
+e:"Bacterias 10-20%, parásitos ~5%. Giardia es el parásito que más diarrea produce en < 5 años. Giardia y Entamoeba causan intolerancia transitoria a la lactosa; los lácteos deben volver."},
+
+{c:"c10",t:"Etiología de la diarrea",q:"Varios familiares presentan náuseas y vómitos intensos 3 horas después de una fiesta, y luego cólicos y diarrea. ¿Qué sospechas?",o:[
+["Intoxicación por toxina preformada","Correcta: síntomas en menos de 6 horas."],
+["Gastroenteritis por rotavirus","El periodo de incubación es más largo y afecta sobre todo a lactantes."],
+["Shigelosis","Una bacteria invasiva necesita más tiempo y da fiebre y disentería."],
+["Giardiasis","Su cuadro es subagudo y no aparece a las pocas horas."]],
+e:"Transmisión de la diarrea infecciosa: fecal-oral, manos contaminadas y fómites."},
+
+{c:"c10",t:"SUH",q:"Niño de 2 años con diarrea sanguinolenta por E. coli productora de toxina Shiga. ¿Qué aumenta el riesgo de SUH?",o:[
+["Antibióticos y antipropulsivos","Correcta según el libro."],
+["SRO de baja osmolaridad","Es el tratamiento de base y no aumenta el riesgo."],
+["Suplemento de zinc","Reduce duración y gravedad; no se asocia a SUH."],
+["Lactancia materna","Se mantiene siempre y protege."]],
+e:"SUH: principal causa de insuficiencia renal adquirida en la infancia; 5-10% de los infectados por STEC, a los 2-14 días. Riesgo: 6 meses-4 años, diarrea con sangre, fiebre, leucocitosis."},
+
+{c:"c10",t:"Evaluación del niño con diarrea",q:"Lactante deshidratado con respiración rápida y profunda, sin sibilancias ni crepitantes. ¿Conducta?",o:[
+["Hidratar: compensa una acidosis metabólica","Correcta: no es dificultad respiratoria."],
+["Nebulizar con salbutamol y reevaluar","No hay broncoespasmo; nebulizar no corrige la causa."],
+["Iniciar antibiótico por posible neumonía","Sin hallazgos pulmonares, la causa es metabólica."],
+["Pedir radiografía de tórax antes de hidratar","Retrasa lo urgente, que es hidratar."]],
+e:"Lo primero es el estado de hidratación. La hipotensión es un signo tardío de hipovolemia. La mayoría de las GEA no requieren laboratorio; el cultivo se reserva para casos moderados-graves, inmunodeprimidos, brotes o sospecha de SUH."},
+
+{c:"c10",t:"Grados de deshidratación",q:"Niño letárgico, con ojos muy hundidos, que no puede beber y con pliegue que tarda más de 2 segundos. ¿Clasificación y plan?",o:[
+["Deshidratación grave; plan C","Correcta: tiene ≥ 2 signos de deshidratación grave, por lo que va a vía IV."],
+["Algún grado de deshidratación; plan B","Sería si estuviera inquieto, sediento, con ojos ligeramente hundidos y pliegue < 2 s."],
+["Deshidratación grave; plan B prolongado","La grave va directamente a vía IV."],
+["Algún grado de deshidratación; plan A","El plan A es para quien no tiene deshidratación."]],
+e:"Criterio OMS: ≥ 2 signos de cada columna. Grave: letargo, ojos muy hundidos, no puede beber, pliegue muy lento."},
+
+{c:"c10",t:"Tipos de deshidratación",q:"Lactante con piel 'pastosa', sed intensa, irritabilidad, hipertonía e hiperreflexia. ¿Tipo de deshidratación?",o:[
+["Hipernatrémica","Correcta: el agua sale de la célula; los signos clásicos pueden estar enmascarados."],
+["Hiponatrémica","El agua entra a la célula: cefalea, vómitos, convulsiones."],
+["Isonatrémica","Es la más frecuente, pero no da esta clínica neurológica característica."],
+["Isonatrémica con acidosis","La acidosis da respiración profunda, no piel pastosa con hipertonía."]],
+e:"Caso de clase: madre que preparó el sobre de SRO en un biberón de 8 oz y además le daba sopa con sal → sobrecarga de sodio. Dar instrucciones por escrito y verificar que las entiendan."},
+
+{c:"c10",t:"Solución de rehidratación oral",q:"¿Cuál es el mecanismo por el que funciona la SRO?",o:[
+["Cotransporte activo sodio-glucosa que arrastra agua","Correcta: la absorción de sodio con glucosa arrastra agua de forma pasiva."],
+["Bloqueo de la secreción intestinal de cloro","No es su mecanismo."],
+["Disminución de la motilidad intestinal","Eso hacen los antipropulsivos, que no se recomiendan."],
+["Absorción de agua por exceso de glucosa","Al contrario: mucha glucosa aumenta la diarrea osmótica."]],
+e:"SRO de baja osmolaridad (OMS): Na 75, Cl 64, K 20 mEq/L, glucosa 75 mmol/L, 245 mOsm/L. No dar refrescos, jugos (el de uva es muy osmolar), agua de azúcar, té ni bebidas embotelladas."},
+
+{c:"c10",t:"Solución de rehidratación oral",q:"¿Cuál indicación sobre la administración de la SRO es correcta?",o:[
+["Si vomita, pausar 10-15 minutos y reiniciar despacio","Correcta: luego se sigue en volúmenes pequeños."],
+["Darla fría para disminuir las náuseas","El frío retrasa el vaciamiento gástrico; se da a temperatura ambiente."],
+["Conservarla preparada durante 72 horas","Se bota a las 24 h: la glucosa es medio de cultivo."],
+["Suspender la lactancia mientras se rehidrata","Nunca se suspende la lactancia."]],
+e:"Con cucharita, gotero o jeringa, 5 mL cada vez. Nunca forzar con la nariz tapada ni acostado (aspiración)."},
+
+{c:"c10",t:"Planes de hidratación",q:"Lactante de 8 kg con algún grado de deshidratación. ¿Cuánta SRO en las primeras 4 horas?",o:[
+["400-800 mL","Correcta: plan B, 50-100 mL/kg en 4 h."],
+["80-160 mL","Corresponde a 10-20 mL/kg, muy poco para el plan B."],
+["160-240 mL","Es el volumen de un bolo IV de 20-30 mL/kg del plan C."],
+["800-1.600 mL","Sería 100-200 mL/kg, el doble de lo indicado."]],
+e:"Plan B: reevaluar cada hora; si sigue deshidratado, 2 h más y luego plan C; si se hidrata, pasar a plan A y observar 1 h; si no tolera, gastroclisis por sonda."},
+
+{c:"c10",t:"Planes de hidratación",q:"Niño de 14 kg sin deshidratación. ¿Cuánta SRO tras cada evacuación?",o:[
+["100-200 mL","Correcta: plan A en > 10 kg."],
+["50-100 mL","Es el volumen del plan A para < 10 kg."],
+["20 mL/kg por evacuación","No es la indicación del plan A."],
+["No necesita SRO si no está deshidratado","El plan A existe justamente para prevenir la deshidratación."]],
+e:"Plan A: control en 48 h y explicar signos de alarma (vómitos incoercibles, evacuaciones muy abundantes, no mejora). La mayoría de las recaídas se deben a mala comunicación al alta."},
+
+{c:"c10",t:"Planes de hidratación",q:"Niño desnutrido grave con deshidratación grave. ¿Qué bolo inicial se usa?",o:[
+["10 mL/kg","Correcta: en desnutridos los bolos son más pequeños."],
+["20-30 mL/kg","Es el bolo del plan C en niños sin desnutrición."],
+["50 mL/kg","Es un volumen excesivo para un bolo."],
+["Solo vía oral","La deshidratación grave requiere vía IV."]],
+e:"Plan C: bolos de 20-30 mL/kg de isotónico en 30-60 min, luego 70 mL/kg en 2,5-5 h. Vía oral contraindicada con alteración de conciencia, íleo, vómitos incoercibles, convulsiones o shock."},
+
+{c:"c10",t:"Tratamiento de la diarrea",q:"¿Cuál es la indicación de zinc en diarrea aguda según el libro?",o:[
+["20 mg/día por 10-14 días","Correcta: reduce la mortalidad por cualquier causa 46% y los ingresos 23%."],
+["20 mg/día durante 3 días","La duración indicada es de 10-14 días."],
+["10 mg/día durante 5 días","No es el esquema."],
+["Solo en diarrea crónica o persistente","Está indicado en diarrea aguda en zonas de riesgo."]],
+e:"La vitamina A reduce episodios, gravedad y mortalidad. Alimentación: dieta habitual, ≥ 100 kcal/kg/día y 2-3 g/kg/día de proteína, evitando grasas y azúcares simples."},
+
+{c:"c10",t:"Tratamiento de la diarrea",q:"Niño con disentería por Shigella. ¿Qué antibiótico se indicó?",o:[
+["TMP-SMX cada 12 h por 5 días","Correcta: 10 mg/kg/día de TMP; alternativa ampicilina."],
+["Metronidazol por 7 días","Es para amebiasis (y solo mata el trofozoíto)."],
+["Azitromicina en dosis única","Se mencionó para el cólera."],
+["Ninguno, porque siempre es autolimitada","La disentería por Shigella sí se trata."]],
+e:"Antibióticos sobre todo en recién nacidos, lactantes pequeños, inmunodeprimidos y sepsis. Probióticos: L. rhamnosus y S. boulardii, solo en diarrea viral. Antieméticos: si se corrige la deshidratación el vómito cede."},
+
+{c:"c10",t:"Complicaciones de la diarrea",q:"¿Cuál de estas complicaciones se asocia a Yersinia y Campylobacter?",o:[
+["Seudoapendicitis","Correcta: ambos gérmenes pueden simular apendicitis."],
+["Megacolon tóxico","Se asocia a Shigella y C. difficile."],
+["Prolapso rectal","También se asocia a Shigella y C. difficile."],
+["Íleo por hipopotasemia","Es una complicación metabólica, no específica de un germen."]],
+e:"Otras: acidosis metabólica (la diarrea es su causa más común), desnutrición, infecciones secundarias, peritonitis, neumatosis e insuficiencia renal aguda."},
+
+{c:"c10",t:"Características del vómito",q:"Escolar con vómitos matutinos sin náusea previa y signos neurológicos. ¿Qué sospechas?",o:[
+["Hipertensión intracraneal","Correcta: vómito matutino sin náusea con signos neurológicos."],
+["Vómito cíclico","Son episodios estereotipados con intervalos totalmente normales."],
+["Estenosis hipertrófica del píloro","Es de las 2-6 semanas de vida."],
+["Gastroenteritis aguda","Suele acompañarse de diarrea y no tiene patrón matutino."]],
+e:"Sangre roja = sangrado activo; bilioso = obstrucción; proyectil no bilioso a las 2-6 semanas = píloro. Alarma: deterioro, deshidratación, abdomen distendido sin ruidos, trauma (pensar en maltrato)."},
+
+{c:"c10",t:"Vómito cíclico",q:"¿Qué apoya el diagnóstico de vómito cíclico?",o:[
+["Episodios estereotipados, intervalos normales y migraña familiar","Correcta: el antecedente familiar de migraña aparece en > 80%."],
+["Vómitos diarios y progresivos con pérdida de peso","Sugiere una causa orgánica que hay que buscar."],
+["Vómitos biliosos intermitentes","Obligan a descartar obstrucción."],
+["Regurgitaciones sin esfuerzo desde el nacimiento","Son de reflujo fisiológico."]],
+e:"~2 episodios/año de 2-4 días. Criterios: ≥ 5 episodios en cualquier intervalo o ≥ 3 en 6 meses. Desencadenantes: estrés, chocolate, infecciones, falta de sueño. Es diagnóstico de exclusión."},
+
+{c:"c10",t:"Antieméticos",q:"Lactante de 8 meses con vómitos. Si hiciera falta un antiemético, ¿cuál se consideró de los más seguros?",o:[
+["Ondansetrón","Correcta: desde los 6 meses, útil en GEA y quimioterapia."],
+["Metoclopramida","Está contraindicada en menores de 1 año."],
+["Ninguno, todos están prohibidos antes del año","El ondansetrón puede usarse desde los 6 meses."],
+["Eritromicina como procinético","La eritromicina aparece como causa de vómito, no como antiemético de elección."]],
+e:"Los antieméticos no son de rutina. Complicaciones del vómito: deshidratación, trastornos metabólicos, desnutrición, desgarros y aspiración."},
+
+{c:"c10",t:"Reflujo y ERGE",q:"Lactante con lactancia exclusiva, regurgitaciones, llanto inconsolable y arqueo; cae del percentil 50 al 10 con examen normal. ¿Primera conducta?",o:[
+["Medidas posturales y dietéticas","Correcta: la profesora insistió en que siempre es lo primero."],
+["Iniciar un inhibidor de bomba de protones","Viene después si fallan las medidas no farmacológicas."],
+["pH-metría esofágica inmediata","Se reserva para cuando el diagnóstico clínico no basta."],
+["Cirugía antirreflujo","Solo de forma excepcional (por ejemplo, pacientes neurológicos)."]],
+e:"La caída de percentil y la irritabilidad hacen que ya no sea reflujo fisiológico (ERGE). El RGE fisiológico suele resolver hacia los 12 meses; si persiste a los 18, buscar causa. Rumiación: regurgita, mastica y traga; se maneja cambiando la actitud de los cuidadores."},
+
+{c:"c10",t:"Diarrea crónica",q:"Diarrea de 3 semanas que mejora con el ayuno y brecha osmolar fecal de 130. ¿Tipo?",o:[
+["Osmótica","Correcta: mejora con ayuno y brecha > 100."],
+["Secretora","Persiste con el ayuno, es de alto volumen y brecha < 50."],
+["Inflamatoria","Se caracteriza por sangre y moco."],
+["Funcional del niño pequeño","Cursa con curva normal y exceso de jugos; no se define por la brecha."]],
+e:"Si la diarrea despierta al niño de noche, buscar causa orgánica. Tratamiento: dieta sin lactosa, nunca suspender la lactancia ni dar jugos; zinc, micronutrientes y hierro una vez estable."},
+
+{c:"c10",t:"Diarrea crónica",q:"Niño de 14 meses con heces pastosas con moco y restos, distensión timpánica, irritabilidad y caída de peso, que empezaron ~1 semana después de introducir papillas. ¿Qué estudio pides?",o:[
+["Anticuerpos anti-transglutaminasa","Correcta: el inicio tras el cambio de alimentación apunta a enfermedad celíaca."],
+["Test del sudor","Sería para fibrosis quística, más típica en < 6 meses."],
+["Prueba de exclusión de proteína de leche de vaca","La APLV es más frecuente en < 6 meses y no se relaciona con la introducción de papillas."],
+["Ninguno, porque es una diarrea funcional","La funcional no hace caer la curva de peso."]],
+e:"Por edad: < 1 mes genéticas/congénitas; < 6 meses APLV, postinfecciosa, fibrosis quística; 6 meses-4 años funcional, celíaca, sobrecrecimiento; mayores: colon irritable, EII, celíaca."},
+
+{c:"c10",t:"Hiponatremia",q:"Niño de 10 kg con sodio de 120 mEq/L. ¿Déficit de sodio para llevarlo a 130?",o:[
+["60 mEq","Correcta: 0,6 × 10 × (130 − 120) = 60."],
+["6 mEq","Olvida multiplicar por la diferencia de sodio."],
+["120 mEq","Usaría 1,2 en lugar de 0,6 como factor."],
+["600 mEq","Usaría 6 en lugar de 0,6 como factor."]],
+e:"Además hay que reponer líquidos según la deshidratación, contando el sodio que ya trae la solución. Osmolaridad = 2 × Na + urea/2,8 + glucosa/18."},
+
+{c:"c10",t:"Hiponatremia",q:"Paciente con hiperlipidemia importante, sodio medido bajo y osmolaridad sérica normal. ¿Interpretación?",o:[
+["Pseudohiponatremia que no requiere tratamiento","Correcta: el exceso de lípidos falsea el sodio medido con osmolaridad normal."],
+["Hiponatremia hipertónica por glucosa","En la hipertónica la osmolaridad está alta por glucosa o manitol."],
+["Hiponatremia hipotónica hipovolémica","La osmolaridad estaría baja."],
+["Hiponatremia grave que requiere sodio IV","No hay un déficit real de sodio."]],
+e:"Hiponatremia: Na < 130. Clínica neurológica (letargo a convulsiones), náuseas, vómitos. En pérdidas extrarrenales la orina tiene densidad < 1010 y sodio bajo."},
+
+{c:"c10",t:"Hiperpotasemia",q:"Potasio de 7,2 mEq/L con ondas T picudas. ¿Qué fármaco protege primero al corazón?",o:[
+["Gluconato de calcio 0,5-1 mL/kg IV","Correcta: estabiliza la membrana del miocardio."],
+["Salbutamol","Baja el potasio metiéndolo a la célula, pero no protege el miocardio."],
+["Glucosa con insulina","También redistribuye el potasio, pero no es el cardioprotector."],
+["Bicarbonato","Ayuda a redistribuir en acidosis, pero no estabiliza la membrana."]],
+e:"ECG: T picuda, QRS ancho, PR largo, desaparición de la P. Si el laboratorio da un potasio alto inesperado, repetir (hemólisis o error)."},
+
+{c:"c10",t:"Ácido-base",q:"Lactante con estenosis hipertrófica del píloro y vómitos repetidos. ¿Qué trastorno ácido-base esperas?",o:[
+["Alcalosis metabólica","Correcta: se pierde ácido clorhídrico."],
+["Acidosis metabólica","Su causa más común en niños es la diarrea (pérdida de bicarbonato)."],
+["Acidosis respiratoria","No hay hipoventilación como mecanismo principal."],
+["Alcalosis respiratoria","No es un problema de hiperventilación."]],
+e:"Alcalosis metabólica: vómitos, diuréticos, píloro, déficit de cloro, Bartter, HSC, fibrosis quística; puede usarse acetazolamida. Hipopotasemia (< 3,5): debilidad, arritmias, parálisis."},
+
+/* ================= CLASE 11 ================= */
+{c:"c11",t:"Sarampión",q:"Fiebre alta, tos, coriza, conjuntivitis con fotofobia y puntos blanco-grisáceos con borde rojo en la mucosa oral. ¿Diagnóstico?",o:[
+["Sarampión","Correcta: manchas de Koplik + fotofobia."],
+["Rubéola","Hay conjuntivitis leve sin fotofobia y adenopatías retroauriculares."],
+["Escarlatina","Lengua aframbuesada y piel de lija, no Koplik."],
+["Exantema súbito","No tiene Koplik ni fotofobia; el exantema aparece al ceder la fiebre."]],
+e:"Koplik: signo patognomónico, 1-4 días antes del exantema, en 50-70%. La profesora no pregunta días de incubación: pregunta casos con signos patognomónicos."},
+
+{c:"c11",t:"Sarampión",q:"¿Cómo evoluciona el exantema del sarampión?",o:[
+["Empieza en cara, desciende y se va en el mismo orden","Correcta: cefalocaudal, en 2-3 días llega a los pies."],
+["Empieza en tronco y se extiende a extremidades","Patrón más parecido al del exantema súbito."],
+["Aparece justo cuando desaparece la fiebre","Es la clave del exantema súbito."],
+["Cuando llega al tronco ya se fue de la cara","Es el patrón de la rubéola."]],
+e:"Maculopapular rojo y confluyente. Descamación fina 'furfurácea' 7-10 días después, no gruesa como en escarlatina. Contagioso ~3 días antes hasta 4-6 días después del exantema."},
+
+{c:"c11",t:"Sarampión",q:"En el sarampión, ¿cuál es la complicación más frecuente y cuál la causa más frecuente de muerte?",o:[
+["Otitis media aguda y neumonía","Correcta: la OMA es la más frecuente y la neumonía la principal causa de muerte."],
+["Neumonía en ambos casos","La neumonía es la causa de muerte, pero la más frecuente es la otitis."],
+["Encefalitis y PEES","La encefalitis es de 1-3/1.000 casos y la PEES es crónica y muy rara."],
+["Queratitis y otitis media","La lesión corneal es posible, pero no es lo más frecuente."]],
+e:"Histología: hiperplasia linfoide y células gigantes multinucleadas (Warthin-Finkeldey). Sarampión atípico en parcialmente vacunados: dolor abdominal, vómitos, síntomas respiratorios. Notificación obligatoria; IgM confirma."},
+
+{c:"c11",t:"Sarampión",q:"Niño de 2 años con sarampión. ¿Qué dosis de vitamina A corresponde?",o:[
+["200.000 UI al día por 2 días","Correcta para ≥ 1 año."],
+["100.000 UI al día por 2 días","Es la dosis de 6-11 meses."],
+["50.000 UI al día por 2 días","Es la dosis de < 6 meses."],
+["No se da sin signos de xeroftalmía","Está indicada en todos los pacientes; la 3.ª dosis es la que se da si hay hipovitaminosis."]],
+e:"Tratamiento de soporte; no antibióticos de rutina ni ribavirina. Prevención: SRP (clase: al año y 18 meses; libro EE.UU.: 12-15 meses y 4-6 años) e inmunoglobulina a contactos."},
+
+{c:"c11",t:"Rubéola",q:"Exantema rosado pálido con más piel sana que enferma, adenopatías retroauriculares y occipitales, sin fotofobia y lesiones en el paladar blando. ¿Diagnóstico?",o:[
+["Rubéola","Correcta: las adenopatías son lo que más se pregunta."],
+["Sarampión","Tendría Koplik, fotofobia y exantema confluyente."],
+["Eritema infeccioso","Da cara abofeteada y exantema en encaje."],
+["Escarlatina","Da exantema áspero, líneas de Pastia y lengua aframbuesada."]],
+e:"Togavirus; el ser humano es el único reservorio. Manchas de Forchheimer en paladar blando. Dura ~3 días ('sarampión de los 3 días'). Puede dar artralgias/artritis, púrpura y encefalitis."},
+
+{c:"c11",t:"Rubéola congénita",q:"Recién nacido con catarata, conducto arterioso persistente, sordera y lesiones en 'blueberry muffin'. ¿Qué ocurrió?",o:[
+["Rubéola materna en el primer trimestre","Correcta: antes de las 8 semanas los defectos son más graves."],
+["Varicela materna en el primer trimestre","Da cicatrices cutáneas y atrofia de extremidades."],
+["Rubéola materna en el tercer trimestre","El síndrome congénito ocurre por infección temprana."],
+["Sarampión materno durante el embarazo","No produce este síndrome."]],
+e:"Tríada clásica: catarata + cardiopatía + sordera. También microcefalia, RCIU y retraso psicomotor. Prevención: vacunar a las mujeres antes del embarazo verificando esquema o anticuerpos."},
+
+{c:"c11",t:"Exantema súbito",q:"Lactante de 10 meses con 3 días de fiebre alta; al ceder aparecen máculo-pápulas rosadas en tronco. Le dieron amoxicilina el día 2. ¿Qué es?",o:[
+["Exantema súbito por herpesvirus 6","Correcta: el exantema aparece cuando cede la fiebre."],
+["Alergia a la amoxicilina","Es la trampa de la clase: se etiqueta falsamente al niño como alérgico."],
+["Sarampión","Tendría Koplik, fotofobia y exantema cefalocaudal con fiebre."],
+["Escarlatina","Tendría faringoamigdalitis y exantema áspero con fiebre."]],
+e:"~95% en < 2 años; el VHH-6B causa la mayoría (6-9 meses). Convulsiones febriles en 5-10%. Edema palpebral leve y adenopatías cervicales discretas. Tratamiento de soporte."},
+
+{c:"c11",t:"Eritema infeccioso",q:"Escolar con mejillas 'abofeteadas' y luego exantema reticulado que reaparece con el sol o el ejercicio. ¿Agente?",o:[
+["Parvovirus B19","Correcta: quinta enfermedad."],
+["Herpesvirus 6","Causa el exantema súbito."],
+["Togavirus","Causa la rubéola."],
+["Streptococcus pyogenes","Causa la escarlatina."]],
+e:"Tres fases: cara abofeteada, exantema macular en tronco, y patrón en encaje que respeta palmas y plantas. Puede dar artropatía y crisis aplásica transitoria. IgM específica; no se cultiva."},
+
+{c:"c11",t:"Varicela",q:"¿Cuál es el signo patognomónico de la varicela?",o:[
+["Lesiones en distintas etapas al mismo tiempo","Correcta: el 'cielo estrellado' (mácula, pápula, vesícula, pústula, costra)."],
+["Descamación en guante","Es de la escarlatina."],
+["Exantema que respeta palmas y plantas","Es del eritema infeccioso en su fase final."],
+["Adenopatías retroauriculares y occipitales","Son de la rubéola."]],
+e:"No respeta zonas: cuero cabelludo, boca, oído, genitales e incluso ojo."},
+
+{c:"c11",t:"Varicela",q:"Sobre la varicela, ¿cuál enunciado es correcto?",o:[
+["Contagia hasta que todas las lesiones están en costra","Correcta: desde 24-48 h antes del exantema hasta que todo es costra."],
+["El aciclovir se indica a todo niño sano","Se indica en las primeras 24 h del exantema y solo si hay enfermedad de base."],
+["La complicación más frecuente es la encefalitis","La más frecuente es la sobreinfección bacteriana de la piel por rascado."],
+["Respeta el cuero cabelludo y las mucosas","No respeta ninguna zona."]],
+e:"Varicela congénita: 1.er trimestre → cicatrices y atrofia de extremidades; madre infectada 2-5 días antes del parto → desenlace fatal. Prurito: calamina."},
+
+{c:"c11",t:"Escarlatina",q:"Preescolar con faringoamigdalitis, lengua roja aframbuesada, exantema áspero y líneas oscuras en pliegues que no blanquean. ¿Tratamiento?",o:[
+["Penicilina benzatínica IM","Correcta: es la única exantemática bacteriana de la clase."],
+["Aciclovir oral","Es antiviral; se usa en varicela con enfermedad de base."],
+["Soporte y vitamina A","Es el manejo del sarampión."],
+["Inmunoglobulina IV y aspirina","Es el tratamiento de Kawasaki, con el que se confundió el caso de clase."]],
+e:"Alergia a penicilina: eritromicina; azitromicina 1 vez/día × 3 días si tolera la vía oral. Complicaciones: fiebre reumática y artritis. Puede simular abdomen agudo."},
+
+{c:"c11",t:"Diferencias entre exantemas",q:"¿Cuál emparejamiento de descamación es correcto?",o:[
+["Fina furfurácea: sarampión; en guante: escarlatina","Correcta: la del sarampión es fina como 'ceniza'; la de escarlatina es gruesa en manos y pies."],
+["Fina furfurácea: escarlatina; en guante: sarampión","Está invertido."],
+["Fina furfurácea: rubéola; en guante: varicela","La rubéola descama mínimamente y la varicela forma costras."],
+["En guante tanto en sarampión como en escarlatina","El sarampión no descama en guante."]],
+e:"Escarlatina: descamación en tronco y luego manos y pies, desde los 3-4 días, como quemadura solar leve. Exantema puntiforme que empieza en cuello, con palidez peribucal."},
+];
+
+/* ---------- datos derivados ---------- */
+const CL = Object.fromEntries(CLASSES.map(c=>[c.k,c]));
+const counters = {};
+const Q = RAW.map(r=>{counters[r.c]=(counters[r.c]||0)+1; return {...r,id:r.c+"-"+counters[r.c]};});
+
+/* ---------- almacenamiento (por navegador) ---------- */
+const KEY="pedsBankP1_v1";
+let store={marked:{},res:{}};
+try{const s=localStorage.getItem(KEY); if(s){const p=JSON.parse(s); store={marked:p.marked||{},res:p.res||{}};}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+
+/* ---------- utilidades ---------- */
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function colVars(col){return {bg:`var(--${col})`,s:`var(--${col}-s)`};}
+
+/* ---------- estado de inicio ---------- */
+let selClasses=new Set(CLASSES.map(c=>c.k));
+let mode="all";
+const MODES=[
+ {k:"all",n:"Todas",f:q=>true},
+ {k:"new",n:"Sin responder",f:q=>!(q.id in store.res)},
+ {k:"wrong",n:"Falladas",f:q=>store.res[q.id]===0},
+ {k:"right",n:"Acertadas",f:q=>store.res[q.id]===1},
+ {k:"marked",n:"Marcadas",f:q=>!!store.marked[q.id]}
+];
+function poolFor(m){const f=MODES.find(x=>x.k===m).f;return Q.filter(q=>selClasses.has(q.c)&&f(q));}
+
+function renderStats(){
+  const ans=Object.keys(store.res).length;
+  const ok=Object.values(store.res).filter(v=>v===1).length;
+  const mk=Object.keys(store.marked).filter(k=>store.marked[k]).length;
+  $("stats").innerHTML=`
+    <div class="stat" style="background:var(--lav)"><b>${Q.length}</b><span>preguntas en el banco</span></div>
+    <div class="stat" style="background:var(--mint)"><b>${ans}</b><span>respondidas alguna vez</span></div>
+    <div class="stat" style="background:var(--peach)"><b>${ans?Math.round(ok/ans*100)+"%":"—"}</b><span>acierto en la última respuesta</span></div>
+    <div class="stat" style="background:var(--butter)"><b>${mk}</b><span>marcadas</span></div>`;
+}
+function renderChips(){
+  $("chips").innerHTML=CLASSES.map(c=>{
+    const n=Q.filter(q=>q.c===c.k).length, on=selClasses.has(c.k), v=colVars(c.col);
+    return `<button class="chip ${on?"on":""}" data-k="${c.k}" aria-pressed="${on}" style="background:${v.bg}">
+      <span class="dot">${on?"✓":""}</span><span><strong>${c.n} <span style="font-weight:600;color:var(--muted)">(${n})</span></strong><small>${c.d}</small></span></button>`;
+  }).join("");
+  $("chips").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const k=b.dataset.k;selClasses.has(k)?selClasses.delete(k):selClasses.add(k);renderHome();});
+}
+function renderModes(){
+  $("modes").innerHTML=MODES.map(m=>`<button class="${m.k===mode?"on":""}" data-k="${m.k}">${m.n}<small>${poolFor(m.k).length}</small></button>`).join("");
+  $("modes").querySelectorAll("button").forEach(b=>b.onclick=()=>{mode=b.dataset.k;renderHome();});
+}
+function renderCount(){
+  const avail=poolFor(mode).length, r=$("num");
+  const prev=+r.value||Math.min(20,avail);
+  r.max=Math.max(1,avail); r.value=Math.min(Math.max(1,prev),Math.max(1,avail));
+  if(avail&&!r.dataset.touched) r.value=Math.min(20,avail);
+  $("numOut").textContent=avail?r.value:0;
+  $("availHint").textContent=avail?`Hay ${avail} disponibles con estos filtros.`:"No hay preguntas disponibles con estos filtros.";
+  const opts=[10,20,30,50].filter(n=>n<avail); opts.push(avail);
+  $("quick").innerHTML=avail?opts.map(n=>`<button data-n="${n}">${n===avail?"Todas ("+n+")":n}</button>`).join(""):"";
+  $("quick").querySelectorAll("button").forEach(b=>b.onclick=()=>{r.value=b.dataset.n;r.dataset.touched=1;$("numOut").textContent=r.value;});
+  $("startBtn").disabled=!avail; $("emptyMsg").classList.toggle("hidden",!!avail); r.disabled=!avail;
+}
+function renderHome(){renderStats();renderChips();renderModes();renderCount();}
+$("num").oninput=e=>{e.target.dataset.touched=1;$("numOut").textContent=e.target.value;};
+$("selAll").onclick=()=>{selClasses=new Set(CLASSES.map(c=>c.k));renderHome();};
+$("selNone").onclick=()=>{selClasses.clear();renderHome();};
+$("resetBtn").onclick=()=>{if(confirm("¿Borrar todas tus respuestas y preguntas marcadas?")){store={marked:{},res:{}};save();renderHome();}};
+
+/* ---------- sesión ---------- */
+let S=null;
+function show(id){["home","quiz","results"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
+function start(list){
+  S={qs:list.map(q=>({q,order:shuffle(q.o.map((_,i)=>i)),pick:null})),i:0};
+  show("quiz");renderQ();
+}
+$("startBtn").onclick=()=>{
+  let pool=poolFor(mode); if($("shuffle").checked) pool=shuffle(pool);
+  start(pool.slice(0,+$("num").value));
+};
+
+function renderProgress(){
+  const total=S.qs.length, done=S.qs.filter(x=>x.pick!==null).length;
+  const pct=total?done/total*100:0;
+  $("fill").style.width=pct+"%"; $("bear").style.left=`clamp(12px, ${pct}%, calc(100% - 12px))`;
+  $("counter").innerHTML=`Pregunta ${S.i+1} <span>de ${total}</span>`;
+  const ok=S.qs.filter(x=>x.pick!==null&&x.order[x.pick]===0).length;
+  $("liveOk").textContent=`✓ ${ok} correctas`; $("liveBad").textContent=`✗ ${done-ok} incorrectas`;
+}
+function renderQ(){
+  const it=S.qs[S.i], q=it.q, c=CL[q.c], v=colVars(c.col);
+  $("qtags").innerHTML=`<span class="tag" style="background:${v.bg}">${c.n}</span><span class="tag" style="background:var(--bg);border:1.5px solid var(--line)">${esc(q.t)}</span>`;
+  $("qtext").textContent=q.q;
+  $("opts").innerHTML=it.order.map((oi,pos)=>`<button class="opt" data-pos="${pos}"><span class="let">${"ABCDE"[pos]}</span><span class="body"><span class="txt">${esc(q.o[oi][0])}</span><span class="why"></span></span></button>`).join("");
+  $("opts").querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.pos));
+  $("gen").textContent=q.e||"";
+  $("qcard").classList.remove("answered");
+  $("verdict").textContent="";
+  updateMark();
+  $("nextBtn").disabled=true;
+  $("nextBtn").textContent=S.i===S.qs.length-1?"Ver resultados":"Siguiente";
+  if(it.pick!==null) paintAnswer();
+  renderProgress();
+}
+function answer(pos){
+  const it=S.qs[S.i]; if(it.pick!==null) return;
+  it.pick=pos;
+  store.res[it.q.id]=it.order[pos]===0?1:0; save();
+  paintAnswer(); renderProgress();
+}
+function paintAnswer(){
+  const it=S.qs[S.i], q=it.q;
+  const btns=$("opts").querySelectorAll(".opt");
+  btns.forEach((b,pos)=>{
+    const oi=it.order[pos], correct=oi===0;
+    b.disabled=true;
+    if(correct) b.classList.add("right");
+    if(pos===it.pick&&!correct) b.classList.add("wrong");
+    const ex=q.o[oi][1]; b.querySelector(".why").innerHTML=(correct?(/^Correct/.test(ex)?"":"<em>Correcta.</em> "):"<em>Incorrecta.</em> ")+esc(ex);
+  });
+  const ok=it.order[it.pick]===0;
+  $("verdict").textContent=ok?"¡Bien! 🎉":"Casi — revisa la explicación 🧸";
+  $("verdict").style.color=ok?"var(--mint-s)":"var(--rose-s)";
+  $("qcard").classList.add("answered");
+  $("nextBtn").disabled=false;
+  $("gen").parentElement.style.display=q.e?"":"none";
+}
+function updateMark(){
+  const on=!!store.marked[S.qs[S.i].q.id];
+  $("markBtn").classList.toggle("on",on);
+  $("markBtn").textContent=on?"★ Marcada":"☆ Marcar";
+  $("markBtn").setAttribute("aria-pressed",on);
+}
+$("markBtn").onclick=()=>{const id=S.qs[S.i].q.id; if(store.marked[id]) delete store.marked[id]; else store.marked[id]=true; save(); updateMark();};
+$("nextBtn").onclick=()=>{if(S.i<S.qs.length-1){S.i++;renderQ();window.scrollTo(0,0);} else results();};
+$("exitBtn").onclick=()=>{if(confirm("¿Salir al inicio? Lo que ya respondiste queda guardado.")){show("home");renderHome();}};
+$("finishBtn").onclick=()=>{const done=S.qs.filter(x=>x.pick!==null).length; if(!done){alert("Responde al menos una pregunta para ver resultados.");return;} if(confirm("¿Terminar ahora y ver resultados de lo respondido?")) results();};
+
+document.addEventListener("keydown",e=>{
+  if($("quiz").classList.contains("hidden")||e.metaKey||e.ctrlKey||e.altKey) return;
+  const k=e.key.toLowerCase(); const it=S&&S.qs[S.i]; if(!it) return;
+  const map={"1":0,"2":1,"3":2,"4":3,"a":0,"b":1,"c":2,"d":3};
+  if(k in map&&it.pick===null&&map[k]<it.order.length){answer(map[k]);e.preventDefault();}
+  else if(k==="enter"&&it.pick!==null){$("nextBtn").click();e.preventDefault();}
+  else if(k==="m"){$("markBtn").click();}
+});
+
+/* ---------- resultados ---------- */
+let lastWrong=[];
+function results(){
+  const done=S.qs.filter(x=>x.pick!==null);
+  const ok=done.filter(x=>x.order[x.pick]===0);
+  const pct=done.length?Math.round(ok.length/done.length*100):0;
+  $("ring").style.setProperty("--p",pct); $("ringTxt").textContent=pct+"%";
+  $("resTitle").textContent=pct>=85?"¡Excelente trabajo!":pct>=70?"Vas muy bien":pct>=50?"Buen avance, a reforzar":"A repasar con calma";
+  $("resSub").textContent=`${ok.length} de ${done.length} correctas`+(done.length<S.qs.length?` (respondiste ${done.length} de ${S.qs.length})`:"")+".";
+  const wrong=done.filter(x=>x.order[x.pick]!==0); lastWrong=wrong.map(x=>x.q);
+
+  const byT={};
+  done.forEach(x=>{const key=x.q.c+"|"+x.q.t; byT[key]=byT[key]||{c:x.q.c,t:x.q.t,n:0,bad:0}; byT[key].n++; if(x.order[x.pick]!==0) byT[key].bad++;});
+  const weak=Object.values(byT).filter(t=>t.bad>0).sort((a,b)=>b.bad-a.bad||(b.bad/b.n)-(a.bad/a.n));
+  $("weak").innerHTML=weak.length?weak.slice(0,10).map(t=>`<li><span style="color:var(--ink)">${esc(t.t)}<small>${CL[t.c].n}</small></span><span>${t.bad} de ${t.n} falladas</span></li>`).join(""):`<li style="background:var(--mint)">No fallaste ningún tema en este intento.</li>`;
+
+  const byC={};
+  done.forEach(x=>{byC[x.q.c]=byC[x.q.c]||{n:0,ok:0};byC[x.q.c].n++; if(x.order[x.pick]===0) byC[x.q.c].ok++;});
+  $("bars").innerHTML=CLASSES.filter(c=>byC[c.k]).map(c=>{const d=byC[c.k],p=Math.round(d.ok/d.n*100),v=colVars(c.col);
+    return `<div class="bar"><div class="lbl">${c.n}: ${esc(c.d)}<span>${p}% (${d.ok}/${d.n})</span></div><div class="track"><i style="width:${p}%;background:${v.s}"></i></div></div>`;}).join("");
+
+  $("missedPanel").classList.toggle("hidden",!wrong.length);
+  $("missed").innerHTML=wrong.map(x=>`<details><summary>${esc(x.q.q)}</summary><p><b>Respuesta correcta:</b> ${esc(x.q.o[0][0])}</p><p>${esc(x.q.e||"")}</p></details>`).join("");
+  $("redoWrong").classList.toggle("hidden",!wrong.length);
+  show("results");
+}
+$("homeBtn").onclick=()=>{show("home");renderHome();};
+$("redoWrong").onclick=()=>{if(lastWrong.length) start(shuffle(lastWrong));};
+
+renderHome();
+</script>
+</body>
+</html>
