@@ -41,6 +41,11 @@ const BANCOS_POR_MATERIA = {
     { id: 'gineco-p1', title: 'Banco de Gineco y Obstetricia · Parte 1', file: 'banco-ginecologia-p1.html' },
   ],
 }
+// Quita acentos para que "GINECOLOGÍA" y "GINECOLOGIA" den lo mismo
+function sinAcentos(s) {
+  return (s || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+}
+
 
 function getBancosForSubject(name) {
   if (!name) return []
