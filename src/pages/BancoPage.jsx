@@ -4,12 +4,13 @@ import { ChevronLeft, BookOpen, ExternalLink } from 'lucide-react'
 import Layout from '../components/Layout'
 
 const BANCOS = {
-  'segundo-parcial':   { title: 'Banco Segundo Parcial',        file: 'banco-segundo-parcial.html' },
-  'anestesiologia':    { title: 'Banco de Anestesiología',      file: 'banco-anestesiologia.html' },
-  'cirugia':           { title: 'Banco de Cirugía',             file: 'banco-cirugia-bloque-qx.html' },
-  'imagenes':          { title: 'Banco de Imágenes',            file: 'banco-imagenes-bloque-qx.html' },
-  'oftalmo-ortopedia': { title: 'Banco Oftalmo y Ortopedia',    file: 'banco-oftalmo-ortopedia.html' },
-  'pediatria-p1':      { title: 'Banco de Pediatría · Parte 1', file: 'banco-pediatria-p1.html' },
+  'segundo-parcial':   { title: 'Banco Segundo Parcial',                  file: 'banco-segundo-parcial.html' },
+  'anestesiologia':    { title: 'Banco de Anestesiología',                file: 'banco-anestesiologia.html' },
+  'cirugia':           { title: 'Banco de Cirugía',                       file: 'banco-cirugia-bloque-qx.html' },
+  'imagenes':          { title: 'Banco de Imágenes',                      file: 'banco-imagenes-bloque-qx.html' },
+  'oftalmo-ortopedia': { title: 'Banco Oftalmo y Ortopedia',              file: 'banco-oftalmo-ortopedia.html' },
+  'pediatria-p1':      { title: 'Banco de Pediatría · Parte 1',           file: 'banco-pediatria-p1.html' },
+  'gineco-p1':         { title: 'Banco de Gineco y Obstetricia · Parte 1', file: 'banco-ginecologia-p1.html' },
 }
 
 export default function BancoPage() {

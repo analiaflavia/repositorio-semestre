@@ -37,11 +37,9 @@ const BANCOS_POR_MATERIA = {
   'PEDIATRIA': [
     { id: 'pediatria-p1', title: 'Banco de Pediatría · Parte 1', file: 'banco-pediatria-p1.html' },
   ],
-}
-
-// Quita acentos para que "PEDIATRÍA" y "PEDIATRIA" den lo mismo
-function sinAcentos(s) {
-  return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  'GINECOLOGIA': [
+    { id: 'gineco-p1', title: 'Banco de Gineco y Obstetricia · Parte 1', file: 'banco-ginecologia-p1.html' },
+  ],
 }
 
 function getBancosForSubject(name) {
