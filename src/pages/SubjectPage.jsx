@@ -35,7 +35,7 @@ const BANCOS_POR_MATERIA = {
     { id: 'imagenes',       title: 'Banco de Imágenes',       file: 'banco-imagenes-bloque-qx.html' },
   ],
   'PEDIATRIA': [
-    { id: 'pediatria-p1', title: 'Banco de Pediatría · Parte 1', file: 'banco-pediatria-p1.html' },
+    { id: 'pediatria', title: 'Banco de Pediatría · Completo', file: 'banco-pediatria.html' },
   ],
   'GINECOLOGIA': [
     { id: 'gineco-p1', title: 'Banco de Gineco y Obstetricia · Parte 1', file: 'banco-ginecologia-p1.html' },
