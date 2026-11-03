@@ -38,7 +38,9 @@ const BANCOS_POR_MATERIA = {
     { id: 'pediatria', title: 'Banco de Pediatría · Completo', file: 'banco-pediatria.html' },
   ],
   'GINECOLOGIA': [
-    { id: 'gineco-p1', title: 'CLASES 1-4 1P', file: 'banco-ginecologia-p1.html' },  ],
+       { id: 'gineco-p1', title: 'CLASES 1-4 1P', file: 'banco-ginecologia-p1.html' },
+    { id: 'gineco-1-8', title: 'CLASES 1-8', file: 'banco-ginecologia-1-8.html' },
+  ],
 }
 // Quita acentos para que "GINECOLOGÍA" y "GINECOLOGIA" den lo mismo
 function sinAcentos(s) {

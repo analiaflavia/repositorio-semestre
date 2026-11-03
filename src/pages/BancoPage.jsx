@@ -10,9 +10,9 @@ const BANCOS = {
   'imagenes':          { title: 'Banco de Imágenes',                      file: 'banco-imagenes-bloque-qx.html' },
   'oftalmo-ortopedia': { title: 'Banco Oftalmo y Ortopedia',              file: 'banco-oftalmo-ortopedia.html' },
     'pediatria':         { title: 'Banco de Pediatría · Completo',          file: 'banco-pediatria.html' },
-  'gineco-p1':         { title: 'Banco de Gineco y Obstetricia · Parte 1', file: 'banco-ginecologia-p1.html' },
+  'gineco-p1':         { title: 'CLASES 1-4 1P', file: 'banco-ginecologia-p1.html' },
+  'gineco-1-8':        { title: 'CLASES 1-8', file: 'banco-ginecologia-1-8.html' },
 }
-
 export default function BancoPage() {
   const { bancoId } = useParams()
   const { user } = useAuth()
