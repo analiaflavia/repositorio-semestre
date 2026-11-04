@@ -12,7 +12,7 @@ const BANCOS = {
     'pediatria':         { title: 'Banco de Pediatría · Completo',          file: 'banco-pediatria.html' },
   'gineco-p1':         { title: 'CLASES 1-4 1P', file: 'banco-ginecologia-p1.html' },
   'gineco-1-8':        { title: 'CLASES 1-8', file: 'banco-ginecologia-1-8.html' },
-}
+  'gineco-completo':   { title: 'BANCO PRIMER PARCIAL COMPLETO', file: 'banco-ginecologia-completo.html' },}
 export default function BancoPage() {
   const { bancoId } = useParams()
   const { user } = useAuth()
